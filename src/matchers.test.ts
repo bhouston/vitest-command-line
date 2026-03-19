@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createScratch } from './index.ts';
-import { extendCommandLineMatchers } from './matchers.ts';
+import { scratchDir } from './index.ts';
+import { extendMatchers } from './matchers.ts';
 import type { CommandResult } from './types.ts';
 
-extendCommandLineMatchers();
+extendMatchers();
 
 const STDOUT_PATTERN = /stdout/;
 const PROBLEM_TEXT_PATTERN = /problem text/;
@@ -59,18 +59,18 @@ describe('command line matchers', () => {
   });
 
   it('supports filesystem assertions for scratch handles and raw paths', async () => {
-    const scratch = await createScratch();
+    const directory = await scratchDir();
 
     try {
-      const outputDir = await scratch.newDir('outputs');
-      const missingFile = await outputDir.newFile({
+      const outputDir = await directory.dir('outputs');
+      const missingFile = await outputDir.file({
         filename: 'missing.txt',
       });
-      const firstFile = await outputDir.newFile({
+      const firstFile = await outputDir.file({
         filename: 'first.txt',
         touch: true,
       });
-      await outputDir.newFile({
+      await outputDir.file({
         filename: 'second.txt',
         touch: true,
       });
@@ -79,24 +79,24 @@ describe('command line matchers', () => {
       expect(firstFile.path).toExist();
       expect(missingFile).not.toExist();
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
   });
 
   it('supports non-empty file assertions', async () => {
-    const scratch = await createScratch();
+    const directory = await scratchDir();
 
     try {
-      const outputDir = await scratch.newDir('outputs');
-      const emptyFile = await outputDir.newFile({
+      const outputDir = await directory.dir('outputs');
+      const emptyFile = await outputDir.file({
         filename: 'empty.txt',
         touch: true,
       });
-      const populatedFile = await outputDir.newFile({
+      const populatedFile = await outputDir.file({
         filename: 'populated.txt',
         content: 'hello world',
       });
-      const missingFile = await outputDir.newFile({
+      const missingFile = await outputDir.file({
         filename: 'missing.txt',
       });
 
@@ -105,28 +105,28 @@ describe('command line matchers', () => {
       expect(missingFile).not.toHaveFileContents();
       expect(outputDir).not.toHaveFileContents();
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
   });
 
   it('supports file content equality assertions', async () => {
-    const scratch = await createScratch();
+    const directory = await scratchDir();
 
     try {
-      const outputDir = await scratch.newDir('outputs');
-      const original = await outputDir.newFile({
+      const outputDir = await directory.dir('outputs');
+      const original = await outputDir.file({
         filename: 'original.txt',
         content: 'same bytes',
       });
-      const matchingCopy = await outputDir.newFile({
+      const matchingCopy = await outputDir.file({
         filename: 'matching.txt',
         content: 'same bytes',
       });
-      const differentFile = await outputDir.newFile({
+      const differentFile = await outputDir.file({
         filename: 'different.txt',
         content: 'different bytes',
       });
-      const missingFile = await outputDir.newFile({
+      const missingFile = await outputDir.file({
         filename: 'missing.txt',
       });
 
@@ -136,7 +136,7 @@ describe('command line matchers', () => {
       expect(original).not.toMatchFileContents(missingFile);
       expect(outputDir).not.toMatchFileContents(original);
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
   });
 });

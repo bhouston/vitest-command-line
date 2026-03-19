@@ -1,6 +1,6 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it } from 'vitest';
-import { defineCommandLine } from './index.ts';
+import { commandLine } from './index.ts';
 
 async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
@@ -17,7 +17,7 @@ async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boole
 
 describe('subprocess command line', () => {
   it('captures stdout from echo', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['/bin/echo'],
       name: 'echo',
     });
@@ -32,7 +32,7 @@ describe('subprocess command line', () => {
   });
 
   it('streams stdin into cat', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['/bin/cat'],
       name: 'cat',
     });
@@ -46,11 +46,11 @@ describe('subprocess command line', () => {
     expect(result.stderr).toBe('');
   });
 
-  it('supports preset env via createInstance', async () => {
-    const command = defineCommandLine({
+  it('supports preset env via withOptions', async () => {
+    const command = commandLine({
       command: ['/bin/sh', '-c'],
       name: 'shell',
-    }).createInstance({
+    }).withOptions({
       env: {
         PRESET_VALUE: 'preset',
       },
@@ -66,7 +66,7 @@ describe('subprocess command line', () => {
   });
 
   it('captures stderr and exit codes', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['/bin/sh', '-c'],
       name: 'shell',
     });
@@ -83,7 +83,7 @@ describe('subprocess command line', () => {
       return;
     }
 
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['/bin/sh', '-c'],
       name: 'shell',
     });

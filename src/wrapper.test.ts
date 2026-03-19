@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defineCommandLine } from './index.ts';
+import { commandLine } from './index.ts';
 
 async function readInput(stream: NodeJS.ReadableStream): Promise<string> {
   let text = '';
@@ -11,7 +11,7 @@ async function readInput(stream: NodeJS.ReadableStream): Promise<string> {
 
 describe('wrapper command line', () => {
   it('captures stdout, stderr, and merged output', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['virtual-cli'],
       name: 'wrapper',
       run: ({ command, io }) => {
@@ -32,7 +32,7 @@ describe('wrapper command line', () => {
   });
 
   it('passes stdin through the wrapper io', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['virtual-cli'],
       name: 'wrapper',
       run: async ({ command, io }) => {
@@ -52,7 +52,7 @@ describe('wrapper command line', () => {
   });
 
   it('passes the base command and runtime args as one vector', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['virtual-cli', '--flag'],
       name: 'wrapper',
       run: ({ command, io }) => {
@@ -66,8 +66,8 @@ describe('wrapper command line', () => {
     expect(result.stdout).toBe('virtual-cli --flag sub --value 123');
   });
 
-  it('supports preset context and env via createInstance', async () => {
-    const command = defineCommandLine<{
+  it('supports preset context and env via withOptions', async () => {
+    const command = commandLine<{
       prefix?: string;
       suffix?: string;
     }>({
@@ -79,7 +79,7 @@ describe('wrapper command line', () => {
         );
         return 0;
       },
-    }).createInstance({
+    }).withOptions({
       context: {
         prefix: '[',
       },

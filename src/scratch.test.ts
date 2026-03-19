@@ -1,102 +1,107 @@
-import { describe, expect, it } from 'vitest';
-import { createScratch, extendCommandLineMatchers } from './index.ts';
+import { readdirSync } from 'node:fs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { extendMatchers, scratchDir, scratchDirectory } from './index.ts';
 
-extendCommandLineMatchers();
+extendMatchers();
 
 describe('scratch helper', () => {
-  it('creates deferred, seeded, and touched files', async () => {
-    const scratch = await createScratch({
+  it('creates deferred, seeded, and touched files after create()', async () => {
+    const directory = scratchDirectory({
       prefix: 'vitest-command-line-test-',
     });
 
+    expect(directory).not.toExist();
+    await directory.create();
+
     try {
-      const deferred = await scratch.newFile({
+      const deferred = await directory.file({
         filename: 'deferred.txt',
       });
-      const shorthand = await scratch.newFile('shorthand.txt');
-      const seeded = await scratch.newFile({
+      const shorthand = await directory.file('shorthand.txt');
+      const seeded = await directory.file({
         filename: 'seeded.txt',
         content: 'hello world',
       });
-      const encoded = await scratch.newFile({
+      const encoded = await directory.file({
         filename: 'encoded.txt',
         content: 'hello encoded',
         encoding: 'utf16le',
       });
-      const binary = await scratch.newFile({
+      const binary = await directory.file({
         filename: 'binary.bin',
         content: Buffer.from([1, 2, 3]),
       });
-      const touched = await scratch.newFile({
+      const touched = await directory.file({
         filename: 'empty.txt',
         touch: true,
       });
 
-      expect(deferred.exists).toBe(false);
-      expect(shorthand.exists).toBe(false);
+      expect(deferred).not.toExist();
+      expect(shorthand).not.toExist();
       expect(seeded).toExist();
       expect(encoded).toExist();
       expect(binary).toExist();
       expect(touched).toExist();
 
-      expect(await seeded.readText()).toBe('hello world');
-      expect(await encoded.readText('utf16le')).toBe('hello encoded');
-      expect(await binary.readBuffer()).toEqual(Buffer.from([1, 2, 3]));
-      expect(await touched.readText()).toBe('');
+      expect(await seeded.text()).toBe('hello world');
+      expect(await encoded.text('utf16le')).toBe('hello encoded');
+      expect(await binary.buffer()).toEqual(Buffer.from([1, 2, 3]));
+      expect(await touched.text()).toBe('');
       expect(seeded).toHaveFileContents();
       expect(seeded).toMatchFileContents(seeded.path);
       expect(seeded).not.toMatchFileContents(encoded);
 
-      await deferred.write('written later');
+      await deferred.set('written later');
       expect(deferred).toExist();
-      expect(await deferred.readText()).toBe('written later');
+      expect(await deferred.text()).toBe('written later');
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
+
+    expect(directory).not.toExist();
   });
 
   it('supports custom extensions, nested paths, and explicit file listing', async () => {
-    const scratch = await createScratch();
+    const directory = await scratchDir();
 
     try {
-      const outputDir = await scratch.newDir('outputs');
-      const nestedDir = await outputDir.newDir('nested');
-      const report = await outputDir.newFile({
+      const outputDir = await directory.dir('outputs');
+      const nestedDir = await outputDir.dir('nested');
+      const report = await outputDir.file({
         name: 'report',
         ext: 'txt',
         content: 'summary',
       });
-      const generated = await outputDir.newFile({
+      const generated = await outputDir.file({
         relativePath: 'nested/generated.bin',
         touch: true,
       });
-      const rootFile = await outputDir.newFile('root.txt');
+      const rootFile = await outputDir.file('root.txt');
 
-      expect(outputDir.exists).toBe(true);
-      expect(outputDir.entries()).toEqual(['nested', 'report.txt']);
-      expect((await outputDir.getFiles()).map((file) => file.path.split('/').pop())).toEqual([
-        'report.txt',
-      ]);
-      expect(
-        (await nestedDir.getFiles()).map((file) => file.path.endsWith('generated.bin')),
-      ).toEqual([true]);
+      expect(outputDir).toExist();
+      expect(readdirSync(outputDir.path).sort()).toEqual(['nested', 'report.txt']);
+      expect(readdirSync(nestedDir.path)).toEqual(['generated.bin']);
       expect(report.path.endsWith('report.txt')).toBe(true);
       expect(generated.path.endsWith('nested/generated.bin')).toBe(true);
       expect(rootFile.path.endsWith('root.txt')).toBe(true);
-      expect(rootFile.exists).toBe(false);
+      expect(rootFile).not.toExist();
       expect(generated).not.toHaveFileContents();
       expect(generated).toMatchFileContents(generated.path);
+
+      await nestedDir.remove();
+      expect(nestedDir).not.toExist();
+      expect(readdirSync(outputDir.path)).toEqual(['report.txt']);
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
   });
 
   it('supports creating multiple file handles in one call', async () => {
-    const scratch = await createScratch();
+    const directory = await scratchDir();
 
     try {
-      const outputDir = await scratch.newDir('outputs');
-      const [first, second, third] = await outputDir.newFiles([
+      const outputDir = await directory.dir('outputs');
+      const [first, second, third] = await outputDir.files([
         'first.txt',
         'second.txt',
         'third.txt',
@@ -105,10 +110,46 @@ describe('scratch helper', () => {
       expect(first.path.endsWith('first.txt')).toBe(true);
       expect(second.path.endsWith('second.txt')).toBe(true);
       expect(third.path.endsWith('third.txt')).toBe(true);
-      expect(first.exists).toBe(false);
-      expect(await outputDir.getFiles()).toHaveLength(0);
+      expect(first).not.toExist();
+      expect(readdirSync(outputDir.path)).toHaveLength(0);
     } finally {
-      await scratch.cleanup();
+      await directory.remove();
     }
+  });
+
+  it('keeps scratchDir() as the eager convenience helper', async () => {
+    const directory = await scratchDir();
+
+    try {
+      expect(directory).toExist();
+
+      const deferred = await directory.file('report.json');
+      expect(deferred).not.toExist();
+    } finally {
+      await directory.remove();
+    }
+  });
+});
+
+describe('scratch helper workflow', () => {
+  let directory = scratchDirectory();
+
+  beforeEach(async () => {
+    directory = scratchDirectory();
+    await directory.create();
+  });
+
+  afterEach(async () => {
+    await directory.remove();
+  });
+
+  it('supports the recommended per-test setup without non-null assertions', async () => {
+    const reportFile = await directory.file('report.json');
+
+    expect(directory).toExist();
+    expect(reportFile).not.toExist();
+
+    await reportFile.set('created during test');
+    expect(reportFile).toHaveFileContents();
   });
 });

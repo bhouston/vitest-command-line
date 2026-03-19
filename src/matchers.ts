@@ -287,7 +287,7 @@ export const commandLineMatchers: CommandLineMatchers = {
 
 let installed = false;
 
-export function extendCommandLineMatchers(): void {
+export function extendMatchers(): void {
   if (installed) {
     return;
   }

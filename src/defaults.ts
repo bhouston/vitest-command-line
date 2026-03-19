@@ -1,5 +1,32 @@
 import type { CommandRunOptions } from './types.ts';
 
+const RUN_OPTION_KEYS = [
+  'context',
+  'cwd',
+  'env',
+  'input',
+  'timeout',
+  'killSignal',
+  'forceKillAfterMs',
+  'subprocessCleanup',
+] as const;
+
+/**
+ * Extract run-option keys from a command-line options object for use as initial
+ * defaults. Only defined values are included.
+ */
+export function pickRunOptions<TContext>(
+  options: Partial<CommandRunOptions<TContext>>,
+): CommandRunOptions<TContext> {
+  const result: CommandRunOptions<TContext> = {};
+  for (const key of RUN_OPTION_KEYS) {
+    if (options[key] !== undefined) {
+      (result as Record<string, unknown>)[key] = options[key];
+    }
+  }
+  return result;
+}
+
 export function mergeCommandRunOptions<TContext>(
   defaults: CommandRunOptions<TContext>,
   overrides: CommandRunOptions<TContext>,

@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, normalize, sep } from 'node:path';
 
@@ -50,16 +50,6 @@ export type ScratchFileOptions = ScratchFileNameOptions &
     | ScratchFileTouchOptions
   );
 export type ScratchFileInput = string | ScratchFileOptions;
-
-type ScratchStats = ReturnType<typeof statSync>;
-
-function getStats(path: string): ScratchStats | null {
-  try {
-    return statSync(path);
-  } catch {
-    return null;
-  }
-}
 
 function normalizeRelativePath(relativePath: string): string {
   if (!relativePath.trim()) {
@@ -121,24 +111,27 @@ function normalizeFileInput(input: ScratchFileInput | undefined): ScratchFileOpt
   return input ?? {};
 }
 
+function createScratchPathState(): ScratchPathState {
+  return {
+    nextFileId: 1,
+    nextDirId: 1,
+  };
+}
+
+function createScratchDirectoryPath(prefix: string): string {
+  return join(tmpdir(), `${prefix}${randomUUID()}`);
+}
+
 export class ScratchEntry {
   readonly path: string;
 
   protected constructor(path: string) {
     this.path = path;
   }
-
-  get exists(): boolean {
-    return existsSync(this.path);
-  }
 }
 
 export class ScratchFile extends ScratchEntry {
-  get fileLength(): Promise<number> {
-    return this.getFileLength();
-  }
-
-  async write(content: ScratchContent, options?: { encoding?: BufferEncoding }): Promise<void> {
+  async set(content: ScratchContent, options?: { encoding?: BufferEncoding }): Promise<void> {
     await mkdir(dirname(this.path), { recursive: true });
     if (typeof content === 'string') {
       await writeFile(this.path, content, { encoding: options?.encoding ?? 'utf8' });
@@ -147,35 +140,16 @@ export class ScratchFile extends ScratchEntry {
     await writeFile(this.path, content);
   }
 
-  async touch(): Promise<void> {
-    await this.write('');
+  async create(): Promise<void> {
+    await this.set('');
   }
 
-  readText(encoding: BufferEncoding = 'utf8'): Promise<string> {
+  text(encoding: BufferEncoding = 'utf8'): Promise<string> {
     return readFile(this.path, { encoding });
   }
 
-  readBuffer(): Promise<Buffer> {
+  buffer(): Promise<Buffer> {
     return readFile(this.path);
-  }
-
-  async equals(other: ScratchPathLike): Promise<boolean> {
-    const otherPath = resolveScratchPath(other);
-    const [thisStats, otherStats] = await Promise.all([
-      getPathStatsAsync(this.path),
-      getPathStatsAsync(otherPath),
-    ]);
-    if (!thisStats?.isFile() || !otherStats?.isFile()) {
-      return false;
-    }
-
-    const [thisBuffer, otherBuffer] = await Promise.all([this.readBuffer(), readFile(otherPath)]);
-    return thisBuffer.equals(otherBuffer);
-  }
-
-  private async getFileLength(): Promise<number> {
-    const fileStats = await stat(this.path);
-    return fileStats.size;
   }
 }
 
@@ -187,31 +161,14 @@ export class ScratchDirectory extends ScratchEntry {
     this.state = state;
   }
 
-  entries(): string[] {
-    const stats = getStats(this.path);
-    if (!stats?.isDirectory()) {
-      return [];
-    }
-    return readdirSync(this.path).sort();
+  async create(): Promise<void> {
+    await mkdir(this.path, { recursive: true });
   }
 
-  async getFiles(): Promise<ScratchFile[]> {
-    const stats = getStats(this.path);
-    if (!stats?.isDirectory()) {
-      return [];
-    }
-
-    const entries = await readdir(this.path, { withFileTypes: true });
-    return entries
-      .filter((entry) => entry.isFile())
-      .sort((left, right) => left.name.localeCompare(right.name))
-      .map((entry) => new ScratchFile(join(this.path, entry.name)));
-  }
-
-  async newFile(input: ScratchFileInput = {}): Promise<ScratchFile> {
+  async file(input: ScratchFileInput = {}): Promise<ScratchFile> {
     const options = normalizeFileInput(input);
     if (options.touch && 'content' in options && options.content !== undefined) {
-      throw new Error('scratch.newFile() does not allow both "content" and "touch".');
+      throw new Error('scratchDir.file() does not allow both "content" and "touch".');
     }
     if (
       'encoding' in options &&
@@ -219,7 +176,7 @@ export class ScratchDirectory extends ScratchEntry {
       (!('content' in options) || typeof options.content !== 'string')
     ) {
       throw new Error(
-        'scratch.newFile() only supports "encoding" when string "content" is provided.',
+        'scratchDir.file() only supports "encoding" when string "content" is provided.',
       );
     }
 
@@ -228,9 +185,9 @@ export class ScratchDirectory extends ScratchEntry {
 
     const file = new ScratchFile(filePath);
     if (options.touch) {
-      await file.touch();
+      await file.create();
     } else if ('content' in options && options.content !== undefined) {
-      await file.write(options.content, {
+      await file.set(options.content, {
         encoding: options.encoding,
       });
     }
@@ -238,47 +195,32 @@ export class ScratchDirectory extends ScratchEntry {
     return file;
   }
 
-  newFiles<const TInputs extends readonly ScratchFileInput[]>(
+  files<const TInputs extends readonly ScratchFileInput[]>(
     inputs: TInputs,
   ): Promise<{ [K in keyof TInputs]: ScratchFile }> {
-    return Promise.all(inputs.map((input) => this.newFile(input))) as Promise<{
+    return Promise.all(inputs.map((input) => this.file(input))) as Promise<{
       [K in keyof TInputs]: ScratchFile;
     }>;
   }
 
-  async newDir(relativePath?: string): Promise<ScratchDirectory> {
+  async dir(relativePath?: string): Promise<ScratchDirectory> {
     const directoryPath = join(this.path, createDirectoryRelativePath(this.state, relativePath));
     await mkdir(directoryPath, { recursive: true });
     return new ScratchDirectory(directoryPath, this.state);
   }
-}
 
-export class Scratch extends ScratchDirectory {
-  async cleanup(): Promise<void> {
+  async remove(): Promise<void> {
     await rm(this.path, { recursive: true, force: true });
   }
 }
 
-export async function createScratch(options?: { prefix?: string }): Promise<Scratch> {
+export function scratchDirectory(options?: { prefix?: string }): ScratchDirectory {
   const prefix = options?.prefix ?? 'vitest-command-line-';
-  const path = await mkdtemp(join(tmpdir(), prefix));
-  return new Scratch(path, {
-    nextFileId: 1,
-    nextDirId: 1,
-  });
+  return new ScratchDirectory(createScratchDirectoryPath(prefix), createScratchPathState());
 }
 
-function resolveScratchPath(pathLike: ScratchPathLike): string {
-  if (typeof pathLike === 'string') {
-    return pathLike;
-  }
-  return pathLike.path;
-}
-
-async function getPathStatsAsync(path: string) {
-  try {
-    return await stat(path);
-  } catch {
-    return null;
-  }
+export async function scratchDir(options?: { prefix?: string }): Promise<ScratchDirectory> {
+  const directory = scratchDirectory(options);
+  await directory.create();
+  return directory;
 }

@@ -12,11 +12,11 @@ one result object.
 
 ## Benefits
 
-- Test real CLIs with a simple `defineCommandLine(...).run(...)` API.
+- Test real CLIs with a simple `commandLine(...).run(...)` API.
 - Capture `stdout`, `stderr`, combined output, exit code, signal, timeout, and
   stream chunks in one `CommandResult`.
-- Reuse `cwd`, `env`, `context`, and timeout defaults with immutable command
-  instances via `createInstance()`.
+- Reuse `cwd`, `env`, `context`, and timeout via options or `withOptions()` for
+  derived instances.
 - Kill stuck subprocesses reliably, including whole process trees when needed.
 - Use built-in Vitest matchers like `toSucceed()`, `toHaveStdout()`, and
   `toHaveTimedOut()`.
@@ -36,44 +36,40 @@ pnpm add -D vitest vitest-command-line
 
 ## Usage
 
-This example runs a real CLI, reuses stable defaults with `createInstance()`,
-creates temporary files with `createScratch()`, and uses the bundled custom
-matchers for readable assertions.
+This example runs a real CLI with defaults in one options object, uses
+`scratchDirectory()` for temporary files, and the bundled custom matchers for
+assertions.
 
 ```ts
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  type Scratch,
-  createScratch,
-  defineCommandLine,
-  extendCommandLineMatchers,
+  commandLine,
+  extendMatchers,
+  scratchDirectory,
 } from 'vitest-command-line';
 
-extendCommandLineMatchers();
+extendMatchers();
 
 describe('my-cli', () => {
-  const scratch: undefined | Scratch;
+  const cli = commandLine({
+    command: ['node', './dist/cli.js'],
+    name: 'my-cli',
+    cwd: directory.path,
+    env: { FORCE_COLOR: '0' },
+  });
+  let directory = scratchDirectory();
 
   beforeEach(async () => {
-    scratch = await createScratch();
+    directory = scratchDirectory();
+    await directory.create();
   });
+
   afterEach(async () => {
-    scratch.cleanup();
-    scratch = undefined;
+    await directory.remove();
   });
 
   it('writes a report file', async () => {
-    const reportFile = await scratch.newFile('report.json');
-
-    const cli = defineCommandLine({
-      command: ['node', './dist/cli.js'],
-      name: 'my-cli',
-    }).createInstance({
-      cwd: scratch.path,
-      env: {
-        FORCE_COLOR: '0',
-      },
-    });
+    const reportFile = await directory.file('report.json');
 
     const result = await cli.run(['build', '--format', 'json', '--output', reportFile.path], {
       timeout: 5_000,
@@ -82,20 +78,23 @@ describe('my-cli', () => {
 
     expect(result).toSucceed();
     expect(result).toHaveStdout(/build complete/i);
-    //expect(reportFile).toExist(); - not needed, implied by toHaveFileContents()
     expect(reportFile).toHaveFileContents();
   });
 ```
 
 ## Core API
 
-- `defineCommandLine({ command, name?, run? })` defines a reusable command target.
+- `commandLine({ command, name?, run?, cwd?, env?, ... })` defines a command
+  target; run-related keys are used as defaults for every `run()`.
 - `command.run(args?, options?)` runs the command and returns a `CommandResult`.
-- `command.createInstance(defaults?)` derives a new immutable command with baked-in
-  defaults such as `cwd`, `env`, `context`, or timeout behavior.
-- `createScratch()` creates a disposable temp directory with helpers for creating
-  files and subdirectories.
-- `extendCommandLineMatchers()` installs custom Vitest matchers on `expect`.
+- `command.withOptions(options?)` returns a new command with additional or
+  overridden run options (e.g. `cwd`, `env`, `timeout`).
+- `scratchDirectory()` returns a disposable `ScratchDirectory`; call `create()`
+  when you want to materialize it, then use helpers like `file()`, `files()`,
+  `dir()`, and `remove()`.
+- `scratchDir()` creates a disposable `ScratchDirectory` immediately when you
+  prefer a one-step async helper.
+- `extendMatchers()` installs custom Vitest matchers on `expect`.
 
 ## Local Development
 

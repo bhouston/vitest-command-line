@@ -1,9 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { defineCommandLine } from './index.ts';
+import { commandLine } from './index.ts';
 
 describe('command instances', () => {
+  it('uses run options from commandLine() as defaults', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: ({ env, io }) => {
+        io.stdout.write(env.BAKED_IN ?? '');
+        return 0;
+      },
+      env: { BAKED_IN: 'from-options' },
+    });
+
+    const result = await command.run();
+    expect(result.stdout).toBe('from-options');
+  });
+
   it('prefers per-run env over instance defaults', async () => {
-    const command = defineCommandLine({
+    const command = commandLine({
       command: ['virtual-cli'],
       run: ({ env, io }) => {
         io.stdout.write(
@@ -11,7 +25,7 @@ describe('command instances', () => {
         );
         return 0;
       },
-    }).createInstance({
+    }).withOptions({
       env: {
         SHARED_VALUE: 'default',
         DEFAULT_ONLY: 'from-defaults',
@@ -29,7 +43,7 @@ describe('command instances', () => {
   });
 
   it('shallow-merges plain object context and prefers per-run values', async () => {
-    const command = defineCommandLine<{
+    const command = commandLine<{
       auth?: string;
       format?: string;
     }>({
@@ -38,7 +52,7 @@ describe('command instances', () => {
         io.stdout.write(`${context?.auth ?? ''}|${context?.format ?? ''}`);
         return 0;
       },
-    }).createInstance({
+    }).withOptions({
       context: {
         auth: 'token',
       },
@@ -54,13 +68,13 @@ describe('command instances', () => {
   });
 
   it('replaces non-object context values instead of merging them', async () => {
-    const command = defineCommandLine<string>({
+    const command = commandLine<string>({
       command: ['virtual-cli'],
       run: ({ context, io }) => {
         io.stdout.write(context ?? '');
         return 0;
       },
-    }).createInstance({
+    }).withOptions({
       context: 'default-context',
     });
 
@@ -72,7 +86,7 @@ describe('command instances', () => {
   });
 
   it('supports chained instances with accumulated defaults', async () => {
-    const base = defineCommandLine<{
+    const base = commandLine<{
       left?: string;
       right?: string;
     }>({
@@ -86,11 +100,11 @@ describe('command instances', () => {
     });
 
     const instance = base
-      .createInstance({
+      .withOptions({
         context: { left: 'A' },
         env: { PRESET: 'one' },
       })
-      .createInstance({
+      .withOptions({
         context: { right: 'B' },
       });
 

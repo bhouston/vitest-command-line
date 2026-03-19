@@ -44,7 +44,7 @@ export type SubprocessCleanupMode = 'process' | 'process-tree';
 
 /**
  * Options applied to a single `run()` call or baked into an instance via
- * `createInstance()`.
+ * `withOptions()` or as part of `commandLine()` options.
  *
  * Merge rules:
  * - top-level scalar fields (`cwd`, `timeout`, etc.) are overridden by the
@@ -99,15 +99,15 @@ export type CommandLineOptions<TContext = undefined> = {
    * can emulate or redirect execution while keeping the same public API.
    */
   run?: CommandRunner<TContext>;
-};
+} & Partial<CommandRunOptions<TContext>>;
 
 export type CommandLine<TContext = undefined> = {
   run: (args?: string[], options?: CommandRunOptions<TContext>) => Promise<CommandResult>;
   /**
-   * Create an immutable derived command with baked-in defaults, similar in
-   * spirit to creating a configured client instance.
+   * Return an immutable derived command with additional or overridden run
+   * options (e.g. `cwd`, `env`, `timeout`) baked in.
    */
-  createInstance: (defaults?: CommandRunOptions<TContext>) => CommandLine<TContext>;
+  withOptions: (options?: CommandRunOptions<TContext>) => CommandLine<TContext>;
 };
 
 export type CommandState = {

@@ -1,6 +1,6 @@
 {
   "name": "vitest-command-line",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "description": "Helpers and matchers for testing command-line tools with Vitest",
   "keywords": [
