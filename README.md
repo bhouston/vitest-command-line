@@ -43,6 +43,7 @@ matchers for readable assertions.
 ```ts
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  type Scratch,
   createScratch,
   defineCommandLine,
   extendCommandLineMatchers,
@@ -51,19 +52,18 @@ import {
 extendCommandLineMatchers();
 
 describe('my-cli', () => {
-  const cleanups: Array<() => Promise<void>> = [];
+  const scratch: undefined | Scratch;
 
+  beforeEach(async () => {
+    scratch = await createScratch();
+  });
   afterEach(async () => {
-    await Promise.all(cleanups.map((cleanup) => cleanup()));
-    cleanups.length = 0;
+    scratch.cleanup();
+    scratch = undefined;
   });
 
   it('writes a report file', async () => {
-    const scratch = await createScratch();
-    cleanups.push(() => scratch.cleanup());
-
-    const outputDir = await scratch.newDir('output');
-    const reportFile = await outputDir.newFile({ filename: 'report.json' });
+    const reportFile = await scratch.newFile('report.json');
 
     const cli = defineCommandLine({
       command: ['node', './dist/cli.js'],
@@ -82,10 +82,9 @@ describe('my-cli', () => {
 
     expect(result).toSucceed();
     expect(result).toHaveStdout(/build complete/i);
-    expect(reportFile).toExist();
+    //expect(reportFile).toExist(); - not needed, implied by toHaveFileContents()
     expect(reportFile).toHaveFileContents();
   });
-});
 ```
 
 ## Core API
