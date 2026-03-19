@@ -1,0 +1,32 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+  "files": {
+    "includes": [
+      "src/**/*",
+      "scripts/**/*",
+      ".github/workflows/**/*",
+      "package.json",
+      "tsconfig.json",
+      "vitest.config.ts",
+      "!dist",
+      "!coverage",
+      "!publish"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  }
+}
