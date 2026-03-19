@@ -125,6 +125,10 @@ run `node scripts/make-release.mjs . --dry-run`.
 
 MIT
 
+## Author
+
+Created by [Ben Houston](https://benhouston3d.com) and sponsored by [Land of Assets](https://landofassets.com).
+
 [npm]: https://img.shields.io/npm/v/vitest-command-line
 [npm-url]: https://www.npmjs.com/package/vitest-command-line
 [npm-downloads]: https://img.shields.io/npm/dw/vitest-command-line
