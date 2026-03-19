@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { commandLine } from './index.ts';
+import { runWrapperCommand } from './wrapper.ts';
 
 async function readInput(stream: NodeJS.ReadableStream): Promise<string> {
   let text = '';
@@ -98,5 +99,135 @@ describe('wrapper command line', () => {
     });
 
     expect(result.stdout).toBe('[value]');
+  });
+
+  it('ignores empty writes on capture streams', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      name: 'wrapper',
+      run: ({ io }) => {
+        io.stdout.write('');
+        io.stdout.write(new Uint8Array());
+        io.stderr.write(Buffer.alloc(0));
+        io.stdout.write('ok\n');
+        return 0;
+      },
+    });
+
+    const result = await command.run();
+    expect(result.stdout).toBe('ok\n');
+    expect(result.chunks).toHaveLength(1);
+  });
+
+  it('treats an implicit void return as exit code 0', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: () => {
+        // undefined
+      },
+    });
+
+    const result = await command.run();
+    expect(result.exitCode).toBe(0);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts numeric and object outcomes including signal', async () => {
+    const seven = commandLine({
+      command: ['virtual-cli'],
+      run: () => 7,
+    });
+    expect((await seven.run()).exitCode).toBe(7);
+
+    const signaled = commandLine({
+      command: ['virtual-cli'],
+      run: () => ({ signal: 'SIGTERM' as const }),
+    });
+    const sigResult = await signaled.run();
+    expect(sigResult.exitCode).toBe(0);
+    expect(sigResult.signal).toBe('SIGTERM');
+  });
+
+  it('times out and aborts a slow wrapper run', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async ({ signal }) => {
+        await new Promise<void>((resolve) => {
+          const t = setTimeout(resolve, 60_000);
+          signal.addEventListener('abort', () => {
+            clearTimeout(t);
+            resolve();
+          });
+        });
+        return 0;
+      },
+    });
+
+    const result = await command.run([], { timeout: 40 });
+    expect(result.timedOut).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it('maps thrown errors to exit code 1 and stderr', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async () => {
+        throw new Error('wrapper boom');
+      },
+    });
+
+    const result = await command.run();
+    expect(result.exitCode).toBe(1);
+    expect(result.success).toBe(false);
+    expect(result.stderr).toContain('wrapper boom');
+  });
+
+  it('stringifies non-Error rejections for stderr', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: () => Promise.reject('plain string fail'),
+    });
+
+    const result = await command.run();
+    expect(result.stderr).toContain('plain string fail');
+  });
+
+  it('does not duplicate stderr when the runner already wrote there', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async ({ io }) => {
+        io.stderr.write('already here\n');
+        throw new Error('after stderr');
+      },
+    });
+
+    const result = await command.run();
+    expect(result.stderr).toBe('already here\n');
+    expect(result.stderr).not.toContain('after stderr');
+  });
+
+  it('feeds sync iterable stdin to the runner', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async ({ io }) => {
+        const text = await readInput(io.stdin);
+        io.stdout.write(text);
+        return 0;
+      },
+    });
+
+    function* chunks() {
+      yield 'a';
+      yield 'b';
+    }
+
+    const result = await command.run([], { input: chunks() });
+    expect(result.stdout).toBe('ab');
+  });
+
+  it('rejects direct wrapper invocation without a runner', async () => {
+    await expect(runWrapperCommand({ command: ['only-cli'] }, [], {})).rejects.toThrow(
+      'Command runner is required',
+    );
   });
 });

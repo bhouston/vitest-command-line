@@ -67,8 +67,10 @@ export async function runSubprocessCommand<TContext>(
 
     if (runOptions.input !== undefined) {
       void pipeInput(capture.io.stdin, child.stdin).catch((error: unknown) => {
+        /* v8 ignore start — stdin may already be closed; difficult to reproduce portably */
         state.error = state.error ?? error;
         child.stdin.end();
+        /* v8 ignore stop */
       });
       return;
     }

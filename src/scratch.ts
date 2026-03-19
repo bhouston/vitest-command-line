@@ -69,7 +69,11 @@ function normalizeRelativePath(relativePath: string): string {
     throw new Error('Scratch paths must not resolve to the scratch root.');
   }
 
-  return normalized.startsWith(`.${sep}`) ? normalized.slice(2) : normalized;
+  if (normalized.startsWith(`.${sep}`)) {
+    /* v8 ignore next — path.normalize usually drops `./`; Windows may retain `.\` */
+    return normalized.slice(2);
+  }
+  return normalized;
 }
 
 function normalizeExtension(ext: string | undefined): string {
@@ -168,7 +172,7 @@ export class ScratchDirectory extends ScratchEntry {
   async file(input: ScratchFileInput = {}): Promise<ScratchFile> {
     const options = normalizeFileInput(input);
     if (options.touch && 'content' in options && options.content !== undefined) {
-      throw new Error('scratchDir.file() does not allow both "content" and "touch".');
+      throw new Error('ScratchDirectory.file() does not allow both "content" and "touch".');
     }
     if (
       'encoding' in options &&
@@ -176,7 +180,7 @@ export class ScratchDirectory extends ScratchEntry {
       (!('content' in options) || typeof options.content !== 'string')
     ) {
       throw new Error(
-        'scratchDir.file() only supports "encoding" when string "content" is provided.',
+        'ScratchDirectory.file() only supports "encoding" when string "content" is provided.',
       );
     }
 
@@ -217,10 +221,4 @@ export class ScratchDirectory extends ScratchEntry {
 export function scratchDirectory(options?: { prefix?: string }): ScratchDirectory {
   const prefix = options?.prefix ?? 'vitest-command-line-';
   return new ScratchDirectory(createScratchDirectoryPath(prefix), createScratchPathState());
-}
-
-export async function scratchDir(options?: { prefix?: string }): Promise<ScratchDirectory> {
-  const directory = scratchDirectory(options);
-  await directory.create();
-  return directory;
 }

@@ -89,11 +89,9 @@ describe('my-cli', () => {
 - `command.run(args?, options?)` runs the command and returns a `CommandResult`.
 - `command.withOptions(options?)` returns a new command with additional or
   overridden run options (e.g. `cwd`, `env`, `timeout`).
-- `scratchDirectory()` returns a disposable `ScratchDirectory`; call `create()`
-  when you want to materialize it, then use helpers like `file()`, `files()`,
-  `dir()`, and `remove()`.
-- `scratchDir()` creates a disposable `ScratchDirectory` immediately when you
-  prefer a one-step async helper.
+- `scratchDirectory()` returns a disposable `ScratchDirectory`. Call
+  `create()` to materialize the directory on disk before using `file()`,
+  `files()`, `dir()`, and `remove()`.
 - `extendMatchers()` installs custom Vitest matchers on `expect`.
 
 ## Local Development

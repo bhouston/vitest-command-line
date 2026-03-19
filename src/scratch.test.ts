@@ -1,8 +1,74 @@
 import { readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { basename, join, sep } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { extendMatchers, scratchDir, scratchDirectory } from './index.ts';
+import { extendMatchers, type ScratchDirectory, scratchDirectory } from './index.ts';
 
 extendMatchers();
+
+async function materializedScratch(options?: { prefix?: string }): Promise<ScratchDirectory> {
+  const directory = scratchDirectory(options);
+  await directory.create();
+  return directory;
+}
+
+describe('scratch path validation', () => {
+  it('rejects invalid relative paths for files', async () => {
+    const directory = await materializedScratch();
+    try {
+      await expect(directory.file({ relativePath: '   ' })).rejects.toThrow(/must not be empty/);
+      await expect(directory.file({ relativePath: join(tmpdir(), 'abs.txt') })).rejects.toThrow(
+        /must be relative/,
+      );
+      await expect(directory.file({ relativePath: '../outside' })).rejects.toThrow(/\.\./);
+      await expect(directory.file({ relativePath: '.' })).rejects.toThrow(/scratch root/);
+      await expect(directory.dir('../escape')).rejects.toThrow(/\.\./);
+    } finally {
+      await directory.remove();
+    }
+  });
+
+  it('rejects conflicting file options', async () => {
+    const directory = await materializedScratch();
+    try {
+      await expect(directory.file({ touch: true, content: 'nope' } as never)).rejects.toThrow(
+        /does not allow both/,
+      );
+      await expect(directory.file({ filename: 'x.txt', encoding: 'utf8' })).rejects.toThrow(
+        /encoding/,
+      );
+    } finally {
+      await directory.remove();
+    }
+  });
+
+  it('treats a null file input like an empty options object', async () => {
+    const directory = await materializedScratch();
+    try {
+      const handle = await directory.file(null as never);
+      expect(handle.path.endsWith('file-1')).toBe(true);
+    } finally {
+      await directory.remove();
+    }
+  });
+
+  it('normalizes dot-prefixed relative paths on Windows', async () => {
+    if (process.platform !== 'win32' || sep !== '\\') {
+      return;
+    }
+
+    const directory = await materializedScratch();
+    try {
+      const handle = await directory.file({
+        relativePath: `.${sep}nested${sep}win.txt`,
+        content: 'ok',
+      });
+      expect(handle.path).toContain(`nested${sep}win.txt`);
+    } finally {
+      await directory.remove();
+    }
+  });
+});
 
 describe('scratch helper', () => {
   it('creates deferred, seeded, and touched files after create()', async () => {
@@ -62,7 +128,7 @@ describe('scratch helper', () => {
   });
 
   it('supports custom extensions, nested paths, and explicit file listing', async () => {
-    const directory = await scratchDir();
+    const directory = await materializedScratch();
 
     try {
       const outputDir = await directory.dir('outputs');
@@ -72,6 +138,24 @@ describe('scratch helper', () => {
         ext: 'txt',
         content: 'summary',
       });
+      const doubledExt = await outputDir.file({
+        filename: 'full.txt',
+        ext: 'bak',
+        content: 'x',
+      });
+      expect(doubledExt.path.endsWith('full.txt.bak')).toBe(true);
+      const singleExt = await outputDir.file({
+        filename: 'already.log',
+        ext: 'log',
+        content: 'y',
+      });
+      expect(singleExt.path.endsWith('already.log')).toBe(true);
+      const dottedExt = await outputDir.file({
+        name: 'readme',
+        ext: '.md',
+        content: '# hi',
+      });
+      expect(dottedExt.path.endsWith('readme.md')).toBe(true);
       const generated = await outputDir.file({
         relativePath: 'nested/generated.bin',
         touch: true,
@@ -79,7 +163,13 @@ describe('scratch helper', () => {
       const rootFile = await outputDir.file('root.txt');
 
       expect(outputDir).toExist();
-      expect(readdirSync(outputDir.path).sort()).toEqual(['nested', 'report.txt']);
+      expect(readdirSync(outputDir.path).sort()).toEqual([
+        'already.log',
+        'full.txt.bak',
+        'nested',
+        'readme.md',
+        'report.txt',
+      ]);
       expect(readdirSync(nestedDir.path)).toEqual(['generated.bin']);
       expect(report.path.endsWith('report.txt')).toBe(true);
       expect(generated.path.endsWith('nested/generated.bin')).toBe(true);
@@ -90,16 +180,24 @@ describe('scratch helper', () => {
 
       await nestedDir.remove();
       expect(nestedDir).not.toExist();
-      expect(readdirSync(outputDir.path)).toEqual(['report.txt']);
+      expect(readdirSync(outputDir.path).sort()).toEqual([
+        'already.log',
+        'full.txt.bak',
+        'readme.md',
+        'report.txt',
+      ]);
     } finally {
       await directory.remove();
     }
   });
 
   it('supports creating multiple file handles in one call', async () => {
-    const directory = await scratchDir();
+    const directory = await materializedScratch();
 
     try {
+      const autoDir = await directory.dir();
+      expect(basename(autoDir.path)).toMatch(/^dir-\d+$/);
+
       const outputDir = await directory.dir('outputs');
       const [first, second, third] = await outputDir.files([
         'first.txt',
@@ -117,8 +215,9 @@ describe('scratch helper', () => {
     }
   });
 
-  it('keeps scratchDir() as the eager convenience helper', async () => {
-    const directory = await scratchDir();
+  it('materializes the root directory before deferred file handles exist', async () => {
+    const directory = scratchDirectory();
+    await directory.create();
 
     try {
       expect(directory).toExist();

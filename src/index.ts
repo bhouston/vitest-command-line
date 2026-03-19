@@ -12,7 +12,7 @@ export type {
   ScratchFileOptions,
   ScratchPathLike,
 } from './scratch.ts';
-export { scratchDir, scratchDirectory } from './scratch.ts';
+export { scratchDirectory } from './scratch.ts';
 export type * from './types.ts';
 
 /**

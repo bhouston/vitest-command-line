@@ -21,6 +21,6 @@ export function terminateChildProcess(
   try {
     child.kill(signal);
   } catch {
-    // Ignore already-exited or unkillable processes.
+    /* v8 ignore next — child may already be dead */
   }
 }
