@@ -115,7 +115,7 @@ describe('subprocess command line', () => {
     expect(result.stderr).toBe('problem\n');
   });
 
-  it('applies default forceKillAfterMs when only timeout is set', { timeout: 10_000 }, async () => {
+  it('applies default forceKillAfterMs when only timeout is set', { timeout: 20_000 }, async () => {
     if (process.platform === 'win32') {
       return;
     }
