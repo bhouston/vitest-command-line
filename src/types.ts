@@ -34,11 +34,7 @@ export type CommandIo = {
   stderr: CommandTextWriter;
 };
 
-export type CommandInput =
-  | string
-  | Uint8Array
-  | Iterable<string | Uint8Array>
-  | AsyncIterable<string | Uint8Array>;
+export type CommandInput = string | Uint8Array | Iterable<string | Uint8Array> | AsyncIterable<string | Uint8Array>;
 
 export type SubprocessCleanupMode = 'process' | 'process-tree';
 

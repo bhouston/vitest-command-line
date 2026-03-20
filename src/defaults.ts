@@ -1,4 +1,4 @@
-import type { CommandRunOptions } from './types.ts';
+import type { CommandRunOptions } from './types.js';
 
 const RUN_OPTION_KEYS = [
   'context',
@@ -15,9 +15,7 @@ const RUN_OPTION_KEYS = [
  * Extract run-option keys from a command-line options object for use as initial
  * defaults. Only defined values are included.
  */
-export function pickRunOptions<TContext>(
-  options: Partial<CommandRunOptions<TContext>>,
-): CommandRunOptions<TContext> {
+export function pickRunOptions<TContext>(options: Partial<CommandRunOptions<TContext>>): CommandRunOptions<TContext> {
   const result: CommandRunOptions<TContext> = {};
   for (const key of RUN_OPTION_KEYS) {
     if (options[key] !== undefined) {
@@ -47,10 +45,7 @@ export function mergeCommandRunOptions<TContext>(
   return merged;
 }
 
-function mergeContext<TContext>(
-  defaults: TContext | undefined,
-  overrides: TContext | undefined,
-): TContext | undefined {
+function mergeContext<TContext>(defaults: TContext | undefined, overrides: TContext | undefined): TContext | undefined {
   if (overrides === undefined) {
     return defaults;
   }

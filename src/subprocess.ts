@@ -1,9 +1,9 @@
 import { spawn } from 'node:child_process';
-import { createOutputCapture } from './capture.ts';
-import { pipeInput } from './io.ts';
-import { terminateChildProcess, usesProcessTreeCleanup } from './processTree.ts';
-import { createInitialCommandState, finalizeCommandResult } from './result.ts';
-import type { CommandLineOptions, CommandResult, CommandRunOptions } from './types.ts';
+import { createOutputCapture } from './capture.js';
+import { pipeInput } from './io.js';
+import { terminateChildProcess, usesProcessTreeCleanup } from './processTree.js';
+import { createInitialCommandState, finalizeCommandResult } from './result.js';
+import type { CommandLineOptions, CommandResult, CommandRunOptions } from './types.js';
 
 export async function runSubprocessCommand<TContext>(
   options: CommandLineOptions<TContext>,

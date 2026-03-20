@@ -1,11 +1,5 @@
 import { Readable } from 'node:stream';
-import type {
-  CommandChunk,
-  CommandInput,
-  CommandIo,
-  CommandResult,
-  CommandStream,
-} from './types.ts';
+import type { CommandChunk, CommandInput, CommandIo, CommandResult, CommandStream } from './types.js';
 
 export type OutputCapture = {
   append: (stream: CommandStream, chunk: string | Uint8Array) => void;

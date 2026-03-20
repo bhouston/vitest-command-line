@@ -1,11 +1,6 @@
-import { createOutputCapture } from './capture.ts';
-import { createInitialCommandState, finalizeCommandResult, normalizeError } from './result.ts';
-import type {
-  CommandLineOptions,
-  CommandResult,
-  CommandRunOptions,
-  WrapperCommandOutcome,
-} from './types.ts';
+import { createOutputCapture } from './capture.js';
+import { createInitialCommandState, finalizeCommandResult, normalizeError } from './result.js';
+import type { CommandLineOptions, CommandResult, CommandRunOptions, WrapperCommandOutcome } from './types.js';
 
 export async function runWrapperCommand<TContext>(
   options: CommandLineOptions<TContext>,
@@ -49,9 +44,7 @@ export async function runWrapperCommand<TContext>(
         });
 
   const raceEntries: Promise<
-    | { kind: 'result'; value: WrapperCommandOutcome }
-    | { kind: 'error'; error: unknown }
-    | { kind: 'timeout' }
+    { kind: 'result'; value: WrapperCommandOutcome } | { kind: 'error'; error: unknown } | { kind: 'timeout' }
   >[] = [
     runnerPromise
       .then((value) => ({ kind: 'result' as const, value }))
@@ -83,12 +76,5 @@ export async function runWrapperCommand<TContext>(
     }
   }
 
-  return finalizeCommandResult(
-    options.name ?? options.command.join(' '),
-    args,
-    cwd,
-    startedAt,
-    state,
-    capture,
-  );
+  return finalizeCommandResult(options.name ?? options.command.join(' '), args, cwd, startedAt, state, capture);
 }

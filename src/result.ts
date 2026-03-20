@@ -1,5 +1,5 @@
-import type { OutputCapture } from './capture.ts';
-import type { CommandResult, CommandState } from './types.ts';
+import type { OutputCapture } from './capture.js';
+import type { CommandResult, CommandState } from './types.js';
 
 export function createInitialCommandState(): CommandState {
   return {
@@ -39,7 +39,6 @@ export function finalizeCommandResult(
     output: snapshot.output,
     chunks: snapshot.chunks,
     error: state.error,
-    success:
-      !state.timedOut && state.exitCode === 0 && state.signal === null && state.error === null,
+    success: !state.timedOut && state.exitCode === 0 && state.signal === null && state.error === null,
   };
 }

@@ -1,5 +1,5 @@
 import type { ChildProcess } from 'node:child_process';
-import type { SubprocessCleanupMode } from './types.ts';
+import type { SubprocessCleanupMode } from './types.js';
 
 export function usesProcessTreeCleanup(mode: SubprocessCleanupMode | undefined): boolean {
   return mode === 'process-tree' && process.platform !== 'win32';

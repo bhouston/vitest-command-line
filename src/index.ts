@@ -1,9 +1,9 @@
-import { mergeCommandRunOptions, pickRunOptions } from './defaults.ts';
-import { runSubprocessCommand } from './subprocess.ts';
-import type { CommandLine, CommandLineOptions, CommandRunOptions } from './types.ts';
-import { runWrapperCommand } from './wrapper.ts';
+import { mergeCommandRunOptions, pickRunOptions } from './defaults.js';
+import { runSubprocessCommand } from './subprocess.js';
+import type { CommandLine, CommandLineOptions, CommandRunOptions } from './types.js';
+import { runWrapperCommand } from './wrapper.js';
 
-export { commandLineMatchers, extendMatchers } from './matchers.ts';
+export { commandLineMatchers, extendMatchers } from './matchers.js';
 export type {
   ScratchContent,
   ScratchDirectory,
@@ -11,18 +11,16 @@ export type {
   ScratchFileInput,
   ScratchFileOptions,
   ScratchPathLike,
-} from './scratch.ts';
-export { scratchDirectory } from './scratch.ts';
-export type * from './types.ts';
+} from './scratch.js';
+export { scratchDirectory } from './scratch.js';
+export type * from './types.js';
 
 /**
  * Create a command-line target that can run as a real subprocess or through an
  * optional injected runner. Options may include run defaults (e.g. `cwd`, `env`,
  * `timeout`); use `withOptions()` to further customize a derived instance.
  */
-export function commandLine<TContext = undefined>(
-  options: CommandLineOptions<TContext>,
-): CommandLine<TContext> {
+export function commandLine<TContext = undefined>(options: CommandLineOptions<TContext>): CommandLine<TContext> {
   return createCommandLine(options, pickRunOptions(options));
 }
 

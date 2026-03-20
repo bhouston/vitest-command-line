@@ -94,16 +94,17 @@ describe('my-cli', () => {
   `files()`, `dir()`, and `remove()`.
 - `extendMatchers()` installs custom Vitest matchers on `expect`.
 
-## Local Development
+## Development
 
-```sh
+```bash
 pnpm install
-pnpm build
-pnpm test
-pnpm test:coverage
-pnpm lint
 pnpm dev
-pnpm make-release
+pnpm tsc # typescript-native
+pnpm build
+pnpm lint # oxlint
+pnpm lint:fix
+pnpm format # oxfmt
+pnpm test # vitest
 ```
 
 `pnpm build` emits the publishable package to `dist/`. `pnpm make-release` builds,

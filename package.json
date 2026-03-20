@@ -1,25 +1,29 @@
 {
   "name": "vitest-command-line",
   "version": "0.7.0",
-  "type": "module",
   "description": "Helpers and matchers for testing command-line tools with Vitest",
   "keywords": [
-    "vitest",
     "cli",
     "command-line",
+    "subprocess",
     "testing",
-    "subprocess"
+    "vitest"
   ],
+  "homepage": "https://github.com/bhouston/vitest-command-line#readme",
+  "bugs": {
+    "url": "https://github.com/bhouston/vitest-command-line/issues"
+  },
   "license": "MIT",
   "author": "Ben Houston",
-  "homepage": "https://github.com/bhouston/vitest-command-line#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bhouston/vitest-command-line.git"
   },
-  "bugs": {
-    "url": "https://github.com/bhouston/vitest-command-line/issues"
-  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -28,32 +32,33 @@
       "import": "./dist/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
-  "sideEffects": false,
-  "packageManager": "pnpm@10.17.0",
-  "engines": {
-    "node": ">=22.0.0"
-  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -w -p tsconfig.json --preserveWatchOutput",
+    "prepare": "husky",
+    "build": "tsgo",
+    "tsc": "tsgo",
+    "dev": "tsgo -w --preserveWatchOutput --noEmitOnError",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "biome check .",
-    "format": "biome check --write .",
+    "format": "oxfmt .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
     "make-release": "node scripts/make-release.mjs ."
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@typescript/native-preview": "7.0.0-dev.20251229.1",
+    "@vitest/coverage-v8": "^4.1.0",
+    "husky": "^9.1.7",
+    "oxfmt": "^0.41.0",
+    "oxlint": "^1.56.0",
+    "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "vitest": ">=4 <5"
   },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
-    "@types/node": "^25.5.0",
-    "@vitest/coverage-v8": "^4.1.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
-  }
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.17.0"
 }

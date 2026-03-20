@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeCommandRunOptions, pickRunOptions } from './defaults.ts';
+import { mergeCommandRunOptions, pickRunOptions } from './defaults.js';
 
 describe('pickRunOptions', () => {
   it('copies only defined run option keys', () => {
@@ -69,10 +69,9 @@ describe('mergeCommandRunOptions', () => {
   });
 
   it('replaces context when the override is not a plain object', () => {
-    expect(
-      mergeCommandRunOptions({ context: { a: 1 } }, { context: 'run' as unknown as { a: number } })
-        .context,
-    ).toBe('run');
+    expect(mergeCommandRunOptions({ context: { a: 1 } }, { context: 'run' as unknown as { a: number } }).context).toBe(
+      'run',
+    );
   });
 
   it('replaces context when the default is not a plain object', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { commandLine } from './index.ts';
-import { runWrapperCommand } from './wrapper.ts';
+import { commandLine } from './index.js';
+import { runWrapperCommand } from './wrapper.js';
 
 async function readInput(stream: NodeJS.ReadableStream): Promise<string> {
   let text = '';
@@ -75,9 +75,7 @@ describe('wrapper command line', () => {
       command: ['virtual-cli'],
       name: 'wrapper',
       run: ({ context, env, io }) => {
-        io.stdout.write(
-          `${context?.prefix ?? ''}${env.RUNTIME_VALUE ?? ''}${context?.suffix ?? ''}`,
-        );
+        io.stdout.write(`${context?.prefix ?? ''}${env.RUNTIME_VALUE ?? ''}${context?.suffix ?? ''}`);
         return 0;
       },
     }).withOptions({
@@ -226,8 +224,6 @@ describe('wrapper command line', () => {
   });
 
   it('rejects direct wrapper invocation without a runner', async () => {
-    await expect(runWrapperCommand({ command: ['only-cli'] }, [], {})).rejects.toThrow(
-      'Command runner is required',
-    );
+    await expect(runWrapperCommand({ command: ['only-cli'] }, [], {})).rejects.toThrow('Command runner is required');
   });
 });

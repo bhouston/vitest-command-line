@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it } from 'vitest';
-import { commandLine } from './index.ts';
+import { commandLine } from './index.js';
 
 async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
@@ -31,9 +31,7 @@ describe('subprocess command line', () => {
     expect(result.error).toBeTruthy();
     expect(result.command).toBe(`${missing} --arg`);
     // Node may report null or a negative errno-style code when spawn fails.
-    expect(
-      result.exitCode === null || (typeof result.exitCode === 'number' && result.exitCode < 0),
-    ).toBe(true);
+    expect(result.exitCode === null || (typeof result.exitCode === 'number' && result.exitCode < 0)).toBe(true);
   });
 
   it('captures stdout from echo', async () => {
@@ -147,10 +145,7 @@ describe('subprocess command line', () => {
 
     // Ignore soft signals so the SIGKILL follow-up timer actually runs.
     const result = await command.run(
-      [
-        '-e',
-        'process.on("SIGINT", () => {}); process.on("SIGTERM", () => {}); setInterval(() => {}, 1000);',
-      ],
+      ['-e', 'process.on("SIGINT", () => {}); process.on("SIGTERM", () => {}); setInterval(() => {}, 1000);'],
       {
         timeout: 400,
         killSignal: 'SIGINT',

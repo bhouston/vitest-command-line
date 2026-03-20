@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { commandLine } from './index.ts';
+import { commandLine } from './index.js';
 
 describe('command instances', () => {
   it('uses run options from commandLine() as defaults', async () => {
@@ -20,9 +20,7 @@ describe('command instances', () => {
     const command = commandLine({
       command: ['virtual-cli'],
       run: ({ env, io }) => {
-        io.stdout.write(
-          `${env.SHARED_VALUE ?? ''}|${env.DEFAULT_ONLY ?? ''}|${env.RUN_ONLY ?? ''}`,
-        );
+        io.stdout.write(`${env.SHARED_VALUE ?? ''}|${env.DEFAULT_ONLY ?? ''}|${env.RUN_ONLY ?? ''}`);
         return 0;
       },
     }).withOptions({
@@ -92,9 +90,7 @@ describe('command instances', () => {
     }>({
       command: ['virtual-cli'],
       run: ({ context, env, io, cwd }) => {
-        io.stdout.write(
-          `${context?.left ?? ''}|${context?.right ?? ''}|${env.PRESET ?? ''}|${cwd}`,
-        );
+        io.stdout.write(`${context?.left ?? ''}|${context?.right ?? ''}|${env.PRESET ?? ''}|${cwd}`);
         return 0;
       },
     });

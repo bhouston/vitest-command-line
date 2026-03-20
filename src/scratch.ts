@@ -43,12 +43,7 @@ type ScratchFileTouchOptions = {
 };
 
 export type ScratchFileOptions = ScratchFileNameOptions &
-  (
-    | ScratchFileDeferredOptions
-    | ScratchFileTextOptions
-    | ScratchFileBinaryOptions
-    | ScratchFileTouchOptions
-  );
+  (ScratchFileDeferredOptions | ScratchFileTextOptions | ScratchFileBinaryOptions | ScratchFileTouchOptions);
 export type ScratchFileInput = string | ScratchFileOptions;
 
 function normalizeRelativePath(relativePath: string): string {
@@ -179,9 +174,7 @@ export class ScratchDirectory extends ScratchEntry {
       options.encoding !== undefined &&
       (!('content' in options) || typeof options.content !== 'string')
     ) {
-      throw new Error(
-        'ScratchDirectory.file() only supports "encoding" when string "content" is provided.',
-      );
+      throw new Error('ScratchDirectory.file() only supports "encoding" when string "content" is provided.');
     }
 
     const filePath = join(this.path, resolveFileRelativePath(this.state, options));

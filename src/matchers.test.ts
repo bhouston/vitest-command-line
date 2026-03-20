@@ -2,9 +2,9 @@ import { execFileSync } from 'node:child_process';
 import { unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { type ScratchDirectory, scratchDirectory } from './index.ts';
-import { extendMatchers } from './matchers.ts';
-import type { CommandResult } from './types.ts';
+import { type ScratchDirectory, scratchDirectory } from './index.js';
+import { extendMatchers } from './matchers.js';
+import type { CommandResult } from './types.js';
 
 extendMatchers();
 
@@ -167,32 +167,20 @@ describe('command line matchers', () => {
   });
 
   it('surfaces mismatch messages when assertions fail', () => {
-    expect(() => expect(createResult({ success: false })).toSucceed()).toThrow(
-      /Expected command to succeed/,
-    );
+    expect(() => expect(createResult({ success: false })).toSucceed()).toThrow(/Expected command to succeed/);
     expect(() => expect(createResult()).not.toSucceed()).toThrow(/Expected command not to succeed/);
     expect(() => expect(createResult()).toFail()).toThrow(/Expected command to fail/);
-    expect(() => expect(createResult({ success: false })).not.toFail()).toThrow(
-      /Expected command not to fail/,
-    );
+    expect(() => expect(createResult({ success: false })).not.toFail()).toThrow(/Expected command not to fail/);
     expect(() => expect(createResult()).toExitWith(1)).toThrow(/exit with 1/);
     expect(() => expect(createResult({ exitCode: 1 })).not.toExitWith(1)).toThrow(/not to exit/);
     expect(() => expect(createResult()).toHaveStdout('nope')).toThrow(/stdout/);
-    expect(() => expect(createResult()).not.toHaveStdout(STDOUT_PATTERN)).toThrow(
-      /stdout not to match/,
-    );
+    expect(() => expect(createResult()).not.toHaveStdout(STDOUT_PATTERN)).toThrow(/stdout not to match/);
     expect(() => expect(createResult({ stderr: 'e' })).toHaveStderr('zzz')).toThrow(/stderr/);
-    expect(() => expect(createResult({ stderr: 'e' })).not.toHaveStderr('e')).toThrow(
-      /stderr not to match/,
-    );
+    expect(() => expect(createResult({ stderr: 'e' })).not.toHaveStderr('e')).toThrow(/stderr not to match/);
     expect(() => expect(createResult()).toHaveOutput('zzz')).toThrow(/merged output/);
-    expect(() => expect(createResult()).not.toHaveOutput(/stdout/)).toThrow(
-      /merged output not to match/,
-    );
+    expect(() => expect(createResult()).not.toHaveOutput(/stdout/)).toThrow(/merged output not to match/);
     expect(() => expect(createResult()).toHaveTimedOut()).toThrow(/time out/);
-    expect(() => expect(createResult({ timedOut: true })).not.toHaveTimedOut()).toThrow(
-      /not to time out/,
-    );
+    expect(() => expect(createResult({ timedOut: true })).not.toHaveTimedOut()).toThrow(/not to time out/);
   });
 
   it('formats paths in filesystem matcher failures', async () => {

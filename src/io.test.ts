@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
-import { pipeInput } from './io.ts';
+import { pipeInput } from './io.js';
 
 describe('pipeInput', () => {
   it('waits for drain when the writable returns false', async () => {
@@ -10,11 +10,7 @@ describe('pipeInput', () => {
 
     const output: NodeJS.WritableStream = {
       writable: true,
-      write(
-        chunk: string | Uint8Array,
-        _encoding?: BufferEncoding,
-        callback?: (error?: Error | null) => void,
-      ) {
+      write(chunk: string | Uint8Array, _encoding?: BufferEncoding, callback?: (error?: Error | null) => void) {
         chunks.push(Buffer.from(chunk));
         if (firstWrite) {
           firstWrite = false;

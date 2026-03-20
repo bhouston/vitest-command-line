@@ -1,6 +1,6 @@
 import { readFileSync, type Stats, statSync } from 'node:fs';
 import { expect } from 'vitest';
-import type { CommandResult } from './types.ts';
+import type { CommandResult } from './types.js';
 
 type CommandLineMatcher = {
   pass: boolean;
@@ -81,9 +81,7 @@ function resolvePathLike(received: unknown, matcherName: string): string {
   ) {
     return (received as { path: string }).path;
   }
-  throw new TypeError(
-    `${matcherName} expected a string path or an object with a string "path" property.`,
-  );
+  throw new TypeError(`${matcherName} expected a string path or an object with a string "path" property.`);
 }
 
 function formatPath(path: string): string {
@@ -100,12 +98,7 @@ function formatPath(path: string): string {
       type = 'other';
     }
   }
-  return [
-    `path: ${path}`,
-    `exists: ${String(stats !== null)}`,
-    `type: ${type}`,
-    `size: ${size}`,
-  ].join('\n');
+  return [`path: ${path}`, `exists: ${String(stats !== null)}`, `type: ${type}`, `size: ${size}`].join('\n');
 }
 
 function isRegularFile(stats: Stats | null): stats is Stats {
@@ -113,13 +106,7 @@ function isRegularFile(stats: Stats | null): stats is Stats {
 }
 
 function formatFileComparison(actualPath: string, expectedPath: string): string {
-  return [
-    `actual file`,
-    formatPath(actualPath),
-    '',
-    `expected file`,
-    formatPath(expectedPath),
-  ].join('\n');
+  return [`actual file`, formatPath(actualPath), '', `expected file`, formatPath(expectedPath)].join('\n');
 }
 
 function assertCommandResult(received: unknown, matcherName: string): CommandResult {
@@ -234,9 +221,7 @@ export const commandLineMatchers: CommandLineMatchers = {
     return {
       pass,
       message: () =>
-        pass
-          ? `Expected path not to exist.\n\n${formatPath(path)}`
-          : `Expected path to exist.\n\n${formatPath(path)}`,
+        pass ? `Expected path not to exist.\n\n${formatPath(path)}` : `Expected path to exist.\n\n${formatPath(path)}`,
       actual: pass,
       expected: true,
     };
@@ -296,7 +281,7 @@ export function extendMatchers(): void {
 }
 
 declare module 'vitest' {
-  // biome-ignore lint/suspicious/noExplicitAny: Vitest's Assertion interface uses any as its default type parameter
+  // Vitest's Assertion interface uses `any` as its default type parameter.
   interface Assertion<T = any> {
     toSucceed(): T;
     toFail(): T;

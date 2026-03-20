@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, sep } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { extendMatchers, type ScratchDirectory, scratchDirectory } from './index.ts';
+import { extendMatchers, type ScratchDirectory, scratchDirectory } from './index.js';
 
 extendMatchers();
 
@@ -17,9 +17,7 @@ describe('scratch path validation', () => {
     const directory = await materializedScratch();
     try {
       await expect(directory.file({ relativePath: '   ' })).rejects.toThrow(/must not be empty/);
-      await expect(directory.file({ relativePath: join(tmpdir(), 'abs.txt') })).rejects.toThrow(
-        /must be relative/,
-      );
+      await expect(directory.file({ relativePath: join(tmpdir(), 'abs.txt') })).rejects.toThrow(/must be relative/);
       await expect(directory.file({ relativePath: '../outside' })).rejects.toThrow(/\.\./);
       await expect(directory.file({ relativePath: '.' })).rejects.toThrow(/scratch root/);
       await expect(directory.dir('../escape')).rejects.toThrow(/\.\./);
@@ -31,12 +29,8 @@ describe('scratch path validation', () => {
   it('rejects conflicting file options', async () => {
     const directory = await materializedScratch();
     try {
-      await expect(directory.file({ touch: true, content: 'nope' } as never)).rejects.toThrow(
-        /does not allow both/,
-      );
-      await expect(directory.file({ filename: 'x.txt', encoding: 'utf8' })).rejects.toThrow(
-        /encoding/,
-      );
+      await expect(directory.file({ touch: true, content: 'nope' } as never)).rejects.toThrow(/does not allow both/);
+      await expect(directory.file({ filename: 'x.txt', encoding: 'utf8' })).rejects.toThrow(/encoding/);
     } finally {
       await directory.remove();
     }
@@ -163,7 +157,7 @@ describe('scratch helper', () => {
       const rootFile = await outputDir.file('root.txt');
 
       expect(outputDir).toExist();
-      expect(readdirSync(outputDir.path).sort()).toEqual([
+      expect(readdirSync(outputDir.path).toSorted()).toEqual([
         'already.log',
         'full.txt.bak',
         'nested',
@@ -180,7 +174,7 @@ describe('scratch helper', () => {
 
       await nestedDir.remove();
       expect(nestedDir).not.toExist();
-      expect(readdirSync(outputDir.path).sort()).toEqual([
+      expect(readdirSync(outputDir.path).toSorted()).toEqual([
         'already.log',
         'full.txt.bak',
         'readme.md',
@@ -199,11 +193,7 @@ describe('scratch helper', () => {
       expect(basename(autoDir.path)).toMatch(/^dir-\d+$/);
 
       const outputDir = await directory.dir('outputs');
-      const [first, second, third] = await outputDir.files([
-        'first.txt',
-        'second.txt',
-        'third.txt',
-      ]);
+      const [first, second, third] = await outputDir.files(['first.txt', 'second.txt', 'third.txt']);
 
       expect(first.path.endsWith('first.txt')).toBe(true);
       expect(second.path.endsWith('second.txt')).toBe(true);
