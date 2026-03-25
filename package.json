@@ -14,7 +14,7 @@
     "url": "https://github.com/bhouston/vitest-command-line/issues"
   },
   "license": "MIT",
-  "author": "Ben Houston",
+  "author": "Ben Houston <ben@ben3d.ca> (https://ben3d.ca)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bhouston/vitest-command-line.git"
