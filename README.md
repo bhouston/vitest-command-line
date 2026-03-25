@@ -124,7 +124,7 @@ MIT
 
 ## Author
 
-Created by [Ben Houston](https://benhouston3d.com) and sponsored by [Land of Assets](https://landofassets.com).
+Created by [Ben Houston](https://ben3d.ca) and sponsored by [Land of Assets](https://landofassets.com).
 
 [npm]: https://img.shields.io/npm/v/vitest-command-line
 [npm-url]: https://www.npmjs.com/package/vitest-command-line
