@@ -1,5 +1,5 @@
 import { createOutputCapture } from './capture.js';
-import { createInitialCommandState, finalizeCommandResult, normalizeError } from './result.js';
+import { createInitialCommandState, finalizeCommandResult, normalizeError, resolveErrorExitCode } from './result.js';
 import type { CommandLineOptions, CommandResult, CommandRunOptions, WrapperCommandOutcome } from './types.js';
 
 export async function runWrapperCommand<TContext>(
@@ -69,12 +69,14 @@ export async function runWrapperCommand<TContext>(
       state.exitCode = 0;
     }
   } else if (outcome.kind === 'error') {
-    state.exitCode = 1;
+    state.exitCode = resolveErrorExitCode(outcome.error);
     state.error = outcome.error;
     if (capture.snapshot().stderr.length === 0) {
       capture.append('stderr', `${normalizeError(outcome.error)}\n`);
     }
   }
 
-  return finalizeCommandResult(options.name ?? options.command.join(' '), args, cwd, startedAt, state, capture);
+  return finalizeCommandResult(options.name ?? options.command.join(' '), args, cwd, startedAt, state, capture, {
+    stripAnsi: runOptions.stripAnsi,
+  });
 }

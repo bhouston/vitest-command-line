@@ -9,6 +9,7 @@ const RUN_OPTION_KEYS = [
   'killSignal',
   'forceKillAfterMs',
   'subprocessCleanup',
+  'stripAnsi',
 ] as const;
 
 /**

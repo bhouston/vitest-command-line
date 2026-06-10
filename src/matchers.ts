@@ -1,4 +1,5 @@
 import { readFileSync, type Stats, statSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { expect } from 'vitest';
 import type { CommandResult } from './types.js';
 
@@ -17,6 +18,8 @@ type CommandLineMatchers = {
   toHaveStderr: (received: unknown, expected: string | RegExp) => CommandLineMatcher;
   toHaveOutput: (received: unknown, expected: string | RegExp) => CommandLineMatcher;
   toHaveTimedOut: (received: unknown) => CommandLineMatcher;
+  toHaveJsonStdout: (received: unknown, expected: unknown) => CommandLineMatcher;
+  toCompleteWithin: (received: unknown, maxDurationMs: number) => CommandLineMatcher;
   toExist: (received: unknown) => CommandLineMatcher;
   toHaveFileContents: (received: unknown) => CommandLineMatcher;
   toMatchFileContents: (received: unknown, expected: unknown) => CommandLineMatcher;
@@ -215,6 +218,45 @@ export const commandLineMatchers: CommandLineMatchers = {
     };
   },
 
+  toHaveJsonStdout(received: unknown, expected: unknown) {
+    const result = assertCommandResult(received, 'toHaveJsonStdout');
+    let parsed: unknown;
+    let parseError: string | null = null;
+    try {
+      parsed = JSON.parse(result.stdout);
+    } catch (error) {
+      parseError = error instanceof Error ? error.message : String(error);
+    }
+    const pass = parseError === null && isDeepStrictEqual(parsed, expected);
+    return {
+      pass,
+      message: () => {
+        if (parseError !== null) {
+          return `Expected stdout to be valid JSON.\n\nparse error: ${parseError}\nstdout: ${JSON.stringify(result.stdout)}`;
+        }
+        return pass
+          ? `Expected JSON stdout not to equal expected value.\n\nactual: ${JSON.stringify(parsed)}\nexpected: ${JSON.stringify(expected)}`
+          : `Expected JSON stdout to equal expected value.\n\nactual: ${JSON.stringify(parsed)}\nexpected: ${JSON.stringify(expected)}`;
+      },
+      actual: parseError === null ? parsed : result.stdout,
+      expected,
+    };
+  },
+
+  toCompleteWithin(received: unknown, maxDurationMs: number) {
+    const result = assertCommandResult(received, 'toCompleteWithin');
+    const pass = result.durationMs <= maxDurationMs;
+    return {
+      pass,
+      message: () =>
+        pass
+          ? `Expected command not to complete within ${maxDurationMs}ms (took ${result.durationMs}ms).\n\n${formatResult(result)}`
+          : `Expected command to complete within ${maxDurationMs}ms (took ${result.durationMs}ms).\n\n${formatResult(result)}`,
+      actual: result.durationMs,
+      expected: `<= ${maxDurationMs}ms`,
+    };
+  },
+
   toExist(received: unknown) {
     const path = resolvePathLike(received, 'toExist');
     const pass = getPathStats(path) !== null;
@@ -290,6 +332,8 @@ declare module 'vitest' {
     toHaveStderr(expected: string | RegExp): T;
     toHaveOutput(expected: string | RegExp): T;
     toHaveTimedOut(): T;
+    toHaveJsonStdout(expected: unknown): T;
+    toCompleteWithin(maxDurationMs: number): T;
     toExist(): T;
     toHaveFileContents(): T;
     toMatchFileContents(expected: string | { path: string }): T;
@@ -303,6 +347,8 @@ declare module 'vitest' {
     toHaveStderr(expected: string | RegExp): void;
     toHaveOutput(expected: string | RegExp): void;
     toHaveTimedOut(): void;
+    toHaveJsonStdout(expected: unknown): void;
+    toCompleteWithin(maxDurationMs: number): void;
     toExist(): void;
     toHaveFileContents(): void;
     toMatchFileContents(expected: string | { path: string }): void;

@@ -180,6 +180,63 @@ describe('wrapper command line', () => {
     expect(result.stderr).toContain('wrapper boom');
   });
 
+  it('honors an integer exitCode property on thrown errors', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async () => {
+        const error = new Error('config invalid') as Error & { exitCode: number };
+        error.exitCode = 78;
+        throw error;
+      },
+    });
+
+    const result = await command.run();
+    expect(result.exitCode).toBe(78);
+    expect(result.success).toBe(false);
+    expect(result.stderr).toContain('config invalid');
+  });
+
+  it('falls back to exit code 1 for non-integer exitCode properties', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: async () => {
+        const error = new Error('bad code') as Error & { exitCode: unknown };
+        error.exitCode = 'not-a-number';
+        throw error;
+      },
+    });
+
+    const result = await command.run();
+    expect(result.exitCode).toBe(1);
+  });
+
+  it('parses JSON stdout via result.json()', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: ({ io }) => {
+        io.stdout.write(JSON.stringify({ status: 'ok', count: 3 }));
+        return 0;
+      },
+    });
+
+    const result = await command.run();
+    expect(result.json()).toEqual({ status: 'ok', count: 3 });
+    expect(result.json<{ count: number }>().count).toBe(3);
+  });
+
+  it('throws from result.json() when stdout is not valid JSON', async () => {
+    const command = commandLine({
+      command: ['virtual-cli'],
+      run: ({ io }) => {
+        io.stdout.write('not json');
+        return 0;
+      },
+    });
+
+    const result = await command.run();
+    expect(() => result.json()).toThrow();
+  });
+
   it('stringifies non-Error rejections for stderr', async () => {
     const command = commandLine({
       command: ['virtual-cli'],

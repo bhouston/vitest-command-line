@@ -3,6 +3,7 @@ import { runSubprocessCommand } from './subprocess.js';
 import type { CommandLine, CommandLineOptions, CommandRunOptions } from './types.js';
 import { runWrapperCommand } from './wrapper.js';
 
+export { stripAnsi } from './ansi.js';
 export { commandLineMatchers, extendMatchers } from './matchers.js';
 export type {
   ScratchContent,

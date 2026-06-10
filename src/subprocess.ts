@@ -85,5 +85,6 @@ export async function runSubprocessCommand<TContext>(
     startedAt,
     state,
     capture,
+    { stripAnsi: runOptions.stripAnsi },
   );
 }

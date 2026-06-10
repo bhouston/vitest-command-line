@@ -121,6 +121,50 @@ describe('scratch helper', () => {
     expect(directory).not.toExist();
   });
 
+  it('seeds the scratch directory from a fixture directory via copyFrom', async () => {
+    const fixtures = await materializedScratch({ prefix: 'vitest-command-line-fixtures-' });
+    const directory = await materializedScratch();
+
+    try {
+      await fixtures.file({ filename: 'config.json', content: '{"name":"fixture"}' });
+      const nested = await fixtures.dir('nested');
+      await nested.file({ filename: 'data.txt', content: 'nested data' });
+
+      await directory.copyFrom(fixtures.path);
+
+      const copiedConfig = join(directory.path, 'config.json');
+      const copiedNested = join(directory.path, 'nested', 'data.txt');
+      expect(copiedConfig).toExist();
+      expect(copiedNested).toExist();
+      expect(copiedConfig).toMatchFileContents(join(fixtures.path, 'config.json'));
+    } finally {
+      await fixtures.remove();
+      await directory.remove();
+    }
+  });
+
+  it('removes itself when used with await using', async () => {
+    let capturedPath = '';
+
+    {
+      await using directory = await materializedScratch();
+      capturedPath = directory.path;
+      await directory.file({ filename: 'temp.txt', content: 'disposable' });
+      expect(capturedPath).toExist();
+    }
+
+    expect(capturedPath).not.toExist();
+  });
+
+  it('exposes Symbol.asyncDispose as an alias for remove', async () => {
+    const directory = await materializedScratch();
+    expect(directory.path).toExist();
+
+    await directory[Symbol.asyncDispose]();
+
+    expect(directory.path).not.toExist();
+  });
+
   it('supports custom extensions, nested paths, and explicit file listing', async () => {
     const directory = await materializedScratch();
 

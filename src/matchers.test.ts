@@ -18,7 +18,7 @@ const STDOUT_PATTERN = /stdout/;
 const PROBLEM_TEXT_PATTERN = /problem text/;
 
 function createResult(overrides: Partial<CommandResult> = {}): CommandResult {
-  return {
+  const result: CommandResult = {
     command: 'test',
     args: [],
     cwd: '/tmp',
@@ -32,8 +32,10 @@ function createResult(overrides: Partial<CommandResult> = {}): CommandResult {
     chunks: [],
     error: null,
     success: true,
+    json: <T = unknown>(): T => JSON.parse(result.stdout) as T,
     ...overrides,
   };
+  return result;
 }
 
 describe('command line matchers', () => {
@@ -65,6 +67,24 @@ describe('command line matchers', () => {
 
     expect(result).toFail();
     expect(result).toHaveTimedOut();
+  });
+
+  it('supports JSON stdout assertions', () => {
+    const result = createResult({
+      stdout: '{"status":"ok","items":[1,2,3]}',
+    });
+
+    expect(result).toHaveJsonStdout({ status: 'ok', items: [1, 2, 3] });
+    expect(result).not.toHaveJsonStdout({ status: 'different' });
+    expect(createResult({ stdout: 'not json' })).not.toHaveJsonStdout({});
+  });
+
+  it('supports duration assertions', () => {
+    const result = createResult({ durationMs: 50 });
+
+    expect(result).toCompleteWithin(50);
+    expect(result).toCompleteWithin(1_000);
+    expect(result).not.toCompleteWithin(49);
   });
 
   it('supports filesystem assertions for scratch handles and raw paths', async () => {
@@ -181,6 +201,13 @@ describe('command line matchers', () => {
     expect(() => expect(createResult()).not.toHaveOutput(/stdout/)).toThrow(/merged output not to match/);
     expect(() => expect(createResult()).toHaveTimedOut()).toThrow(/time out/);
     expect(() => expect(createResult({ timedOut: true })).not.toHaveTimedOut()).toThrow(/not to time out/);
+    expect(() => expect(createResult({ stdout: '{"a":1}' })).toHaveJsonStdout({ a: 2 })).toThrow(
+      /Expected JSON stdout to equal/,
+    );
+    expect(() => expect(createResult({ stdout: '{"a":1}' })).not.toHaveJsonStdout({ a: 1 })).toThrow(/not to equal/);
+    expect(() => expect(createResult({ stdout: 'nope' })).toHaveJsonStdout({})).toThrow(/valid JSON/);
+    expect(() => expect(createResult({ durationMs: 100 })).toCompleteWithin(10)).toThrow(/complete within 10ms/);
+    expect(() => expect(createResult({ durationMs: 5 })).not.toCompleteWithin(10)).toThrow(/not to complete within/);
   });
 
   it('formats paths in filesystem matcher failures', async () => {

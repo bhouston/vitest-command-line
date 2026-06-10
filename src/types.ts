@@ -22,6 +22,8 @@ export type CommandResult = {
   chunks: CommandChunk[];
   error: unknown | null;
   success: boolean;
+  /** Parse the captured stdout as JSON. Throws if stdout is not valid JSON. */
+  json: <T = unknown>() => T;
 };
 
 export type CommandTextWriter = {
@@ -58,6 +60,11 @@ export type CommandRunOptions<TContext = undefined> = {
   killSignal?: NodeJS.Signals;
   forceKillAfterMs?: number;
   subprocessCleanup?: SubprocessCleanupMode;
+  /**
+   * Strip ANSI escape sequences from `stdout`, `stderr`, `output`, and chunk
+   * text in the returned `CommandResult`.
+   */
+  stripAnsi?: boolean;
 };
 
 export type WrapperCommandOutcome =

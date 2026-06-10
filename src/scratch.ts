@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, normalize, sep } from 'node:path';
 
@@ -152,7 +152,7 @@ export class ScratchFile extends ScratchEntry {
   }
 }
 
-export class ScratchDirectory extends ScratchEntry {
+export class ScratchDirectory extends ScratchEntry implements AsyncDisposable {
   private readonly state: ScratchPathState;
 
   constructor(path: string, state: ScratchPathState) {
@@ -162,6 +162,15 @@ export class ScratchDirectory extends ScratchEntry {
 
   async create(): Promise<void> {
     await mkdir(this.path, { recursive: true });
+  }
+
+  /**
+   * Recursively copy the contents of `sourcePath` (a fixture/template
+   * directory) into this scratch directory. The scratch directory is created
+   * if it does not exist yet.
+   */
+  async copyFrom(sourcePath: string): Promise<void> {
+    await cp(sourcePath, this.path, { recursive: true });
   }
 
   async file(input: ScratchFileInput = {}): Promise<ScratchFile> {
@@ -208,6 +217,14 @@ export class ScratchDirectory extends ScratchEntry {
 
   async remove(): Promise<void> {
     await rm(this.path, { recursive: true, force: true });
+  }
+
+  /**
+   * Support `await using directory = scratchDirectory();` — the directory is
+   * removed automatically when the enclosing scope exits.
+   */
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.remove();
   }
 }
 
