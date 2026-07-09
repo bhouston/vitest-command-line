@@ -25,6 +25,23 @@ type CommandLineMatchers = {
   toMatchFileContents: (received: unknown, expected: unknown) => CommandLineMatcher;
 };
 
+type PathLikeMatcherExpected = string | { path: string };
+
+type CommandLineMatcherAssertions<TReturn = void> = {
+  toSucceed(): TReturn;
+  toFail(): TReturn;
+  toExitWith(expectedExitCode: number | null): TReturn;
+  toHaveStdout(expected: string | RegExp): TReturn;
+  toHaveStderr(expected: string | RegExp): TReturn;
+  toHaveOutput(expected: string | RegExp): TReturn;
+  toHaveTimedOut(): TReturn;
+  toHaveJsonStdout(expected: unknown): TReturn;
+  toCompleteWithin(maxDurationMs: number): TReturn;
+  toExist(): TReturn;
+  toHaveFileContents(): TReturn;
+  toMatchFileContents(expected: PathLikeMatcherExpected): TReturn;
+};
+
 function isCommandResult(value: unknown): value is CommandResult {
   return (
     typeof value === 'object' &&
@@ -323,34 +340,9 @@ export function extendMatchers(): void {
 }
 
 declare module 'vitest' {
-  // Vitest's Assertion interface uses `any` as its default type parameter.
-  interface Assertion<T = any> {
-    toSucceed(): T;
-    toFail(): T;
-    toExitWith(expectedExitCode: number | null): T;
-    toHaveStdout(expected: string | RegExp): T;
-    toHaveStderr(expected: string | RegExp): T;
-    toHaveOutput(expected: string | RegExp): T;
-    toHaveTimedOut(): T;
-    toHaveJsonStdout(expected: unknown): T;
-    toCompleteWithin(maxDurationMs: number): T;
-    toExist(): T;
-    toHaveFileContents(): T;
-    toMatchFileContents(expected: string | { path: string }): T;
-  }
+  interface Matchers<T = any> extends CommandLineMatcherAssertions<T> {}
 
-  interface AsymmetricMatchersContaining {
-    toSucceed(): void;
-    toFail(): void;
-    toExitWith(expectedExitCode: number | null): void;
-    toHaveStdout(expected: string | RegExp): void;
-    toHaveStderr(expected: string | RegExp): void;
-    toHaveOutput(expected: string | RegExp): void;
-    toHaveTimedOut(): void;
-    toHaveJsonStdout(expected: unknown): void;
-    toCompleteWithin(maxDurationMs: number): void;
-    toExist(): void;
-    toHaveFileContents(): void;
-    toMatchFileContents(expected: string | { path: string }): void;
-  }
+  interface Assertion<T = any> extends CommandLineMatcherAssertions<T> {}
+
+  interface AsymmetricMatchersContaining extends CommandLineMatcherAssertions {}
 }
