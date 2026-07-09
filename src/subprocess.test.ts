@@ -18,6 +18,11 @@ async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boole
   return false;
 }
 
+async function* chunkedStdinInput(): AsyncGenerator<string> {
+  yield 'chunk-a';
+  yield 'chunk-b';
+}
+
 describe('subprocess command line', () => {
   it('records spawn error and default command label when executable is missing', async () => {
     const missing = join(tmpdir(), `vitest-command-line-missing-${randomUUID()}`);
@@ -70,13 +75,8 @@ describe('subprocess command line', () => {
       name: 'cat',
     });
 
-    async function* input(): AsyncGenerator<string> {
-      yield 'chunk-a';
-      yield 'chunk-b';
-    }
-
     const result = await command.run([], {
-      input: input(),
+      input: chunkedStdinInput(),
     });
 
     expect(result.success).toBe(true);

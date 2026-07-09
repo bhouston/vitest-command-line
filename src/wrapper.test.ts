@@ -10,13 +10,18 @@ async function readInput(stream: NodeJS.ReadableStream): Promise<string> {
   return text;
 }
 
+function* stdinChunks() {
+  yield 'a';
+  yield 'b';
+}
+
 describe('wrapper command line', () => {
   it('captures stdout, stderr, and merged output', async () => {
     const command = commandLine({
       command: ['virtual-cli'],
       name: 'wrapper',
-      run: ({ command, io }) => {
-        expect(command).toEqual(['virtual-cli']);
+      run: ({ command: argv, io }) => {
+        expect(argv).toEqual(['virtual-cli']);
         io.stdout.write('out-1\n');
         io.stderr.write('err-1\n');
         io.stdout.write('out-2\n');
@@ -36,8 +41,8 @@ describe('wrapper command line', () => {
     const command = commandLine({
       command: ['virtual-cli'],
       name: 'wrapper',
-      run: async ({ command, io }) => {
-        expect(command).toEqual(['virtual-cli']);
+      run: async ({ command: argv, io }) => {
+        expect(argv).toEqual(['virtual-cli']);
         const input = await readInput(io.stdin);
         io.stdout.write(input.toUpperCase());
         return { exitCode: 0 };
@@ -56,8 +61,8 @@ describe('wrapper command line', () => {
     const command = commandLine({
       command: ['virtual-cli', '--flag'],
       name: 'wrapper',
-      run: ({ command, io }) => {
-        io.stdout.write(command.join(' '));
+      run: ({ command: argv, io }) => {
+        io.stdout.write(argv.join(' '));
         return 0;
       },
     });
@@ -271,12 +276,7 @@ describe('wrapper command line', () => {
       },
     });
 
-    function* chunks() {
-      yield 'a';
-      yield 'b';
-    }
-
-    const result = await command.run([], { input: chunks() });
+    const result = await command.run([], { input: stdinChunks() });
     expect(result.stdout).toBe('ab');
   });
 

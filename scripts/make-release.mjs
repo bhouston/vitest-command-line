@@ -5,8 +5,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const scriptPath = fileURLToPath(import.meta.url);
+const scriptDir = dirname(scriptPath);
 
 function createPublishPackageJson(packageJson) {
   const {
@@ -20,7 +20,7 @@ function createPublishPackageJson(packageJson) {
 }
 
 function main() {
-  const rootPath = resolve(__dirname, '..');
+  const rootPath = resolve(scriptDir, '..');
   const packagePath = process.argv[2] ?? '.';
   const isDryRun = process.argv.includes('--dry-run');
   const resolvedPackagePath = resolve(rootPath, packagePath);
