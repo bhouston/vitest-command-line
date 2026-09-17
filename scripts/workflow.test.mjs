@@ -5,7 +5,7 @@ import { analyzeCommits } from '@semantic-release/commit-analyzer';
 import config from '../release.config.js';
 
 const valid = {
-  PR_BASE: 'dev',
+  PR_BASE: 'main',
   PR_HEAD: 'feat/42-export',
   PR_BODY: 'Closes #42',
   PR_HEAD_REPO: 'owner/repo',
@@ -16,9 +16,8 @@ for (const [name, overrides, passes] of [
   ['wrong issue', { PR_BODY: 'Closes #420' }, false],
   ['missing issue', { PR_BODY: '' }, false],
   ['unnumbered branch', { PR_HEAD: 'feat/export' }, false],
-  ['feature into main', { PR_BASE: 'main' }, false],
-  ['release', { PR_BASE: 'main', PR_HEAD: 'dev', PR_BODY: '' }, true],
-  ['fork dev into main', { PR_BASE: 'main', PR_HEAD: 'dev', PR_HEAD_REPO: 'fork/repo' }, false],
+  ['wrong target branch', { PR_BASE: 'dev' }, false],
+  ['fork PR', { PR_HEAD_REPO: 'fork/repo' }, false],
 ]) {
   test(`PR policy: ${name}`, () => {
     const result = spawnSync(process.execPath, ['scripts/check-pr-policy.mjs'], {

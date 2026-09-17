@@ -194,8 +194,9 @@ pnpm test # vitest
 to inspect the npm payload without publishing, and `pnpm size` to check its size.
 
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the issue → branch → PR workflow.
-PRs target `dev`; merging `dev` into `main` runs quality checks and semantic-release.
-Versions and changelogs are generated from Conventional Commits and published
+PRs target `main`; merging runs quality checks but does not publish. Releases
+run only through a manually dispatched `Release` workflow on `main`, which
+generates versions and changelogs from Conventional Commits and publishes
 through npm trusted publishing. See [release setup](docs/releasing.md) and the
 [security policy](SECURITY.md).
 
