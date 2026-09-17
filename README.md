@@ -190,10 +190,14 @@ pnpm format # oxfmt
 pnpm test # vitest
 ```
 
-`pnpm build` emits the publishable package to `dist/`. `pnpm make-release` builds,
-stages the npm payload in `publish/`, copies `dist`, `README.md`, and `LICENSE`,
-and then runs `npm publish`. For a non-publishing smoke test of the staged payload,
-run `node scripts/make-release.mjs . --dry-run`.
+`pnpm build` emits the publishable package to `dist/`. Run `pnpm package:check`
+to inspect the npm payload without publishing, and `pnpm size` to check its size.
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the issue → branch → PR workflow.
+PRs target `dev`; merging `dev` into `main` runs quality checks and semantic-release.
+Versions and changelogs are generated from Conventional Commits and published
+through npm trusted publishing. See [release setup](docs/releasing.md) and the
+[security policy](SECURITY.md).
 
 ## Testing Notes
 
@@ -213,7 +217,7 @@ MIT
 [npm-url]: https://www.npmjs.com/package/vitest-command-line
 [npm-downloads]: https://img.shields.io/npm/dw/vitest-command-line
 [npmtrends-url]: https://www.npmtrends.com/vitest-command-line
-[tests-badge]: https://github.com/bhouston/vitest-command-line/actions/workflows/test.yml/badge.svg
-[tests-url]: https://github.com/bhouston/vitest-command-line/actions/workflows/test.yml
+[tests-badge]: https://github.com/bhouston/vitest-command-line/actions/workflows/ci.yml/badge.svg
+[tests-url]: https://github.com/bhouston/vitest-command-line/actions/workflows/ci.yml
 [coverage-badge]: https://codecov.io/gh/bhouston/vitest-command-line/graph/badge.svg
 [coverage-url]: https://codecov.io/gh/bhouston/vitest-command-line
