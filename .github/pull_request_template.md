@@ -8,6 +8,6 @@ Closes #<issue-number>
 
 List relevant checks and results.
 
-- [ ] Targets `dev` (or `dev` → `main` for a release).
+- [ ] Targets `main`.
 - [ ] Title follows Conventional Commits, including `!` for breaking changes.
 - [ ] Tests, coverage, types, lint, audit, and size checks pass.
