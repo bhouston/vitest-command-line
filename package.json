@@ -20,7 +20,11 @@
     "url": "git+https://github.com/bhouston/vitest-command-line.git"
   },
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "sideEffects": false,
@@ -36,6 +40,9 @@
       "import": "./dist/yargs.js"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepare": "husky",
     "build": "tsc",
@@ -48,18 +55,33 @@
     "format": "oxfmt .",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "make-release": "node scripts/make-release.mjs ."
+    "release": "semantic-release",
+    "size": "size-limit",
+    "package:check": "npm pack --dry-run --ignore-scripts",
+    "test:workflow": "node --test scripts/workflow.test.mjs"
   },
   "devDependencies": {
-    "@types/node": "^24",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.9",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "@size-limit/file": "^14.0.0",
+    "@types/node": "^24.13.5",
+    "@vitest/coverage-v8": "^4.1.11",
+    "conventional-changelog-conventionalcommits": "^10.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.3.0",
+    "lint-staged": "^17.5.1",
     "oxfmt": "^0.58.0",
-    "oxlint": "^1.73.0",
-    "typescript": "^7",
-    "vitest": "^4.1.10",
-    "yargs": "^18.0.0"
+    "oxlint": "^1.83.0",
+    "semantic-release": "^25.0.9",
+    "size-limit": "^14.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11",
+    "yargs": "^18.1.0"
   },
   "peerDependencies": {
     "vitest": ">=1 <5"
@@ -71,6 +93,14 @@
     ],
     "*.{json,jsonc,md,mdx,css,html,yml,yaml}": "oxfmt"
   },
+  "size-limit": [
+    {
+      "name": "All runtime JavaScript (gzip)",
+      "path": "dist/**/*.js",
+      "limit": "20 kB",
+      "gzip": true
+    }
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
