@@ -28,10 +28,10 @@ This is the single workflow standard for human contributors, Claude, and Codex.
    a description of the final behavior, validation results, and `Closes #42`
    referencing the branch's issue number. Agents should use
    `gh pr create --base main --body-file <file>`. Mark incomplete work as draft.
-7. Squash-merge PRs into `main`. Use the validated PR title as the squash
-   commit subject and preserve any breaking-change footer. Prefer `!` in the
-   title for breaking changes so that squash merges cannot lose it. CI
-   validates PR titles because they become release-relevant squash commits.
+7. PRs are merged with merge commits (`gh pr merge --merge --delete-branch`);
+   do not squash or rebase-merge. Every commit on the branch must be a valid
+   Conventional Commit because semantic-release analyzes each one. CI still
+   validates PR titles so they read as release-relevant summaries.
 
 PR checks mechanically verify the base branch, issue-numbered branch name,
 closing reference, and commit title. They cannot verify that an issue was opened
