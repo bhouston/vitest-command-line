@@ -6,16 +6,14 @@ import config from '../release.config.js';
 
 const valid = {
   PR_BASE: 'main',
-  PR_HEAD: 'feat/42-export',
   PR_BODY: 'Closes #42',
   PR_HEAD_REPO: 'owner/repo',
   PR_REPO: 'owner/repo',
 };
 for (const [name, overrides, passes] of [
   ['implementation', {}, true],
-  ['wrong issue', { PR_BODY: 'Closes #420' }, false],
+  ['any branch name', { PR_HEAD: 'anything-i-want' }, true],
   ['missing issue', { PR_BODY: '' }, false],
-  ['unnumbered branch', { PR_HEAD: 'feat/export' }, false],
   ['wrong target branch', { PR_BASE: 'dev' }, false],
   ['fork PR', { PR_HEAD_REPO: 'fork/repo' }, false],
 ]) {

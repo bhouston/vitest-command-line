@@ -8,9 +8,8 @@ This is the single workflow standard for human contributors, Claude, and Codex.
    existing issue). Use the feature template: description and motivation,
    acceptance criteria, and constraints. Agents should create the issue with
    `gh issue create`, supplying the same sections in the body.
-2. Fetch `origin` and branch from `origin/main`. Name the branch
-   `<type>/<issue-number>-<short-description>`, for example
-   `feat/42-batch-export`. Never commit directly to `main`.
+2. Fetch `origin` and branch from `origin/main`. Branch names are not
+   restricted; pick anything descriptive. Never commit directly to `main`.
 3. Implement the issue and add appropriate tests. Preserve unrelated local work.
 4. Use Conventional Commits for every commit. Husky runs commitlint locally.
    Format: `type(optional-scope): description`. Use `feat` for a minor release,
@@ -33,9 +32,9 @@ This is the single workflow standard for human contributors, Claude, and Codex.
    Conventional Commit because semantic-release analyzes each one. CI still
    validates PR titles so they read as release-relevant summaries.
 
-PR checks mechanically verify the base branch, issue-numbered branch name,
-closing reference, and commit title. They cannot verify that an issue was opened
-before work started; contributors remain responsible for this sequence.
+PR checks mechanically verify the base branch, closing reference, and commit
+title. They cannot verify that an issue was opened before work started;
+contributors remain responsible for this sequence.
 Merging a PR closes its issue but does not publish a release.
 
 ## Controlled releases
