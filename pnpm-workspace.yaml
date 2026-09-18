@@ -1,2 +1,5 @@
 packages:
   - '.'
+
+overrides:
+  conventional-changelog-conventionalcommits: 9.3.1
