@@ -3,7 +3,6 @@
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
-    "incremental": false,
     "noEmit": true,
     "rootDir": ".",
     "sourceMap": false

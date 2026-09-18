@@ -27,10 +27,9 @@ changes. No npm publishing is performed during the initial implementation PR.
 
 ## GitHub configuration
 
-Keep `main` as the default and sole active integration branch. Enable squash
-merges and set the squash commit default title to the PR title. Disable merge
-commits and rebase merges to keep history linear and predictable for
-semantic-release's commit analysis.
+Keep `main` as the default and sole active integration branch. Enable merge
+commits and disable squash and rebase merges; PRs are merged with merge commits
+so semantic-release analyzes each Conventional Commit on the branch.
 
 Protect `main` with required PRs and required checks `Quality` and
 `PR policy`; disallow force pushes and deletion. For a solo maintainer,
@@ -64,8 +63,8 @@ Never assume that its source package version identifies the last published commi
 
 ## Release review and recovery
 
-1. Squash-merge reviewed implementation PRs into `main` with their Conventional
-   Commit titles.
+1. Merge reviewed implementation PRs into `main` with merge commits; do not
+   squash.
 2. When ready to publish, dispatch the `Release` workflow on `main`:
    `gh workflow run release.yml --ref main`. It reruns quality checks and
    publishes only if semantic-release identifies a feature, fix, performance
