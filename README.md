@@ -4,6 +4,7 @@
 [![NPM Downloads][npm-downloads]][npmtrends-url]
 [![Tests][tests-badge]][tests-url]
 [![Coverage][coverage-badge]][coverage-url]
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)][discord-url]
 
 Helpers and matchers for testing command-line tools with Vitest. `vitest-command-line`
 gives you a small, typed API for running real subprocesses or injected wrapper
@@ -222,3 +223,4 @@ MIT
 [tests-url]: https://github.com/bhouston/vitest-command-line/actions/workflows/ci.yml
 [coverage-badge]: https://codecov.io/gh/bhouston/vitest-command-line/graph/badge.svg
 [coverage-url]: https://codecov.io/gh/bhouston/vitest-command-line
+[discord-url]: https://discord.gg/fwupDN493R
