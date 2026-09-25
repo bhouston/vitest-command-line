@@ -347,5 +347,6 @@ declare module 'vitest' {
 
   interface Assertion<R extends void | Promise<void> = void, T = unknown> extends CommandLineMatcherAssertions<R> {}
 
-  interface AsymmetricMatchersContaining extends CommandLineMatcherAssertions<any> {}
+  // AsymmetricMatchersContaining already extends Matchers<any>, which picks up
+  // CommandLineMatcherAssertions via the augmentation above.
 }
