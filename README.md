@@ -194,6 +194,13 @@ pnpm test # vitest
 `pnpm build` emits the publishable package to `dist/`. Run `pnpm package:check`
 to inspect the npm payload without publishing, and `pnpm size` to check its size.
 
+CI enforces a few quality gates beyond build/lint/test: `pnpm test --coverage`
+must report at least 95% coverage for statements, branches, functions, and
+lines; `pnpm size` enforces a 20 kB gzip budget on the runtime JavaScript
+(`dist/**/*.js`); and `pnpm package:check` (`npm pack --dry-run`) verifies the
+published npm payload. Change these thresholds only with an explanation in the
+PR.
+
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the issue → branch → PR workflow.
 PRs target `main`; merging runs quality checks but does not publish. Releases
 run only through a manually dispatched `Release` workflow on `main`, which
