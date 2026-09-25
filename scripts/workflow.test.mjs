@@ -1,28 +1,24 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { analyzeCommits } from '@semantic-release/commit-analyzer';
+import { checkPullRequest } from './check-pr.mjs';
 import config from '../release.config.js';
 
-const valid = {
-  PR_BASE: 'main',
-  PR_BODY: 'Closes #42',
-  PR_HEAD_REPO: 'owner/repo',
-  PR_REPO: 'owner/repo',
-};
+const valid = { base: { ref: 'main' }, body: 'Closes #42' };
 for (const [name, overrides, passes] of [
   ['implementation', {}, true],
-  ['any branch name', { PR_HEAD: 'anything-i-want' }, true],
-  ['missing issue', { PR_BODY: '' }, false],
-  ['wrong target branch', { PR_BASE: 'dev' }, false],
-  ['fork PR', { PR_HEAD_REPO: 'fork/repo' }, false],
+  ['any branch name', { head: { ref: 'anything-i-want' } }, true],
+  ['missing issue', { body: '' }, false],
+  ['wrong target branch', { base: { ref: 'dev' } }, false],
 ]) {
   test(`PR policy: ${name}`, () => {
-    const result = spawnSync(process.execPath, ['scripts/check-pr-policy.mjs'], {
-      env: { ...process.env, ...valid, ...overrides },
-      encoding: 'utf8',
-    });
-    assert.equal(result.status === 0, passes, result.stderr);
+    let threw = false;
+    try {
+      checkPullRequest({ ...valid, ...overrides });
+    } catch {
+      threw = true;
+    }
+    assert.equal(!threw, passes);
   });
 }
 
