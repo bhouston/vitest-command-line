@@ -340,9 +340,12 @@ export function extendMatchers(): void {
 }
 
 declare module 'vitest' {
-  interface Matchers<T = any> extends CommandLineMatcherAssertions<T> {}
+  interface Matchers<
+    R extends void | Promise<void> = void | Promise<void>,
+    T = unknown,
+  > extends CommandLineMatcherAssertions<R> {}
 
-  interface Assertion<T = any> extends CommandLineMatcherAssertions<T> {}
+  interface Assertion<R extends void | Promise<void> = void, T = unknown> extends CommandLineMatcherAssertions<R> {}
 
-  interface AsymmetricMatchersContaining extends CommandLineMatcherAssertions {}
+  interface AsymmetricMatchersContaining extends CommandLineMatcherAssertions<any> {}
 }
