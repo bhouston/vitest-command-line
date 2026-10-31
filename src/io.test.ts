@@ -8,9 +8,14 @@ describe('pipeInput', () => {
     let firstWrite = true;
     let drained = false;
 
-    const output: NodeJS.WritableStream = {
+    const output = {
       writable: true,
-      write(chunk: string | Uint8Array, _encoding?: BufferEncoding, callback?: (error?: Error | null) => void) {
+      write(
+        chunk: string | Uint8Array,
+        encodingOrCallback?: BufferEncoding | ((error?: Error | null) => void),
+        maybeCallback?: (error?: Error | null) => void,
+      ) {
+        const callback = typeof encodingOrCallback === 'function' ? encodingOrCallback : maybeCallback;
         chunks.push(Buffer.from(chunk));
         if (firstWrite) {
           firstWrite = false;
@@ -33,7 +38,7 @@ describe('pipeInput', () => {
         callback?.();
         return output;
       },
-    };
+    } as unknown as NodeJS.WritableStream;
 
     const input = Readable.from([Buffer.from('a'), Buffer.from('b')]);
 

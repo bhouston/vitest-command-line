@@ -76,8 +76,8 @@ describe('mergeCommandRunOptions', () => {
 
   it('replaces context when the default is not a plain object', () => {
     expect(
-      mergeCommandRunOptions(
-        { context: 'base' as unknown as Record<string, never> },
+      mergeCommandRunOptions<Record<string, unknown>>(
+        { context: 'base' as unknown as Record<string, unknown> },
         {
           context: { obj: true },
         },

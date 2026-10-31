@@ -183,7 +183,7 @@ describe('command line matchers', () => {
   it('rejects invalid path-like values for filesystem matchers', () => {
     expect(() => expect(42).toExist()).toThrow(TypeError);
     expect(() => expect({ path: 1 }).toHaveFileContents()).toThrow(TypeError);
-    expect(() => expect('/tmp').toMatchFileContents({ path: null })).toThrow(TypeError);
+    expect(() => expect('/tmp').toMatchFileContents({ path: null as unknown as string })).toThrow(TypeError);
   });
 
   it('surfaces mismatch messages when assertions fail', () => {

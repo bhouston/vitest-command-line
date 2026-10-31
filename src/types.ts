@@ -20,7 +20,7 @@ export type CommandResult = {
   stderr: string;
   output: string;
   chunks: CommandChunk[];
-  error: unknown | null;
+  error: unknown;
   success: boolean;
   /** Parse the captured stdout as JSON. Throws if stdout is not valid JSON. */
   json: <T = unknown>() => T;
@@ -117,5 +117,5 @@ export type CommandState = {
   exitCode: number | null;
   signal: NodeJS.Signals | null;
   timedOut: boolean;
-  error: unknown | null;
+  error: unknown;
 };

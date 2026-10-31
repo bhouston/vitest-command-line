@@ -30,7 +30,7 @@ describe('scratch path validation', () => {
     const directory = await materializedScratch();
     try {
       await expect(directory.file({ touch: true, content: 'nope' } as never)).rejects.toThrow(/does not allow both/);
-      await expect(directory.file({ filename: 'x.txt', encoding: 'utf8' })).rejects.toThrow(/encoding/);
+      await expect(directory.file({ filename: 'x.txt', encoding: 'utf8' } as never)).rejects.toThrow(/encoding/);
     } finally {
       await directory.remove();
     }
@@ -201,7 +201,7 @@ describe('scratch helper', () => {
       const rootFile = await outputDir.file('root.txt');
 
       expect(outputDir).toExist();
-      expect(readdirSync(outputDir.path).toSorted()).toEqual([
+      expect(readdirSync(outputDir.path).sort()).toEqual([
         'already.log',
         'full.txt.bak',
         'nested',
@@ -218,12 +218,7 @@ describe('scratch helper', () => {
 
       await nestedDir.remove();
       expect(nestedDir).not.toExist();
-      expect(readdirSync(outputDir.path).toSorted()).toEqual([
-        'already.log',
-        'full.txt.bak',
-        'readme.md',
-        'report.txt',
-      ]);
+      expect(readdirSync(outputDir.path).sort()).toEqual(['already.log', 'full.txt.bak', 'readme.md', 'report.txt']);
     } finally {
       await directory.remove();
     }
