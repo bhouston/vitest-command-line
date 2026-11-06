@@ -1,17 +1,26 @@
+<p align="center">
+  <a href="https://npmjs.com/package/vitest-command-line"><img src="https://img.shields.io/npm/v/vitest-command-line.svg" alt="npm package"></a>
+  <a href="https://www.npmtrends.com/vitest-command-line"><img src="https://img.shields.io/npm/dw/vitest-command-line.svg" alt="npm downloads"></a>
+  <a href="https://codecov.io/gh/bhouston/vitest-command-line"><img src="https://codecov.io/gh/bhouston/vitest-command-line/branch/main/graph/badge.svg" alt="coverage"></a>
+  <a href="https://discord.gg/fwupDN493R"><img src="https://img.shields.io/badge/chat-discord-blue?style=flat&logo=discord" alt="discord chat"></a>
+</p>
+<br/>
+
 # vitest-command-line
 
-[![NPM Package][npm]][npm-url]
-[![NPM Downloads][npm-downloads]][npmtrends-url]
-[![Tests][tests-badge]][tests-url]
-[![Coverage][coverage-badge]][coverage-url]
-[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)][discord-url]
+> Run real CLIs from Vitest and assert on everything they print.
 
-Helpers and matchers for testing command-line tools with Vitest. `vitest-command-line`
-gives you a small, typed API for running real subprocesses or injected wrapper
-commands while capturing stdout, stderr, merged output, timing, and exit state in
-one result object.
+- 🧪 Test Real CLIs
+- 📦 One Result for All Output
+- 🎯 Built-in Vitest Matchers
+- 🌳 Kills Whole Process Trees
+- 📁 Disposable Scratch Directories
+- 🧶 In-Process yargs Adapter
 
-## Benefits
+`vitest-command-line` gives you a small, typed API for running real subprocesses or injected wrapper commands
+while capturing stdout, stderr, merged output, timing, and exit state in one result object.
+
+## Features
 
 - Test real CLIs with a simple `commandLine(...).run(...)` API.
 - Capture `stdout`, `stderr`, combined output, exit code, signal, timeout, and
@@ -201,7 +210,6 @@ lines; `pnpm size` enforces a 20 kB gzip budget on the runtime JavaScript
 published npm payload. Change these thresholds only with an explanation in the
 PR.
 
-Follow [CONTRIBUTING.md](CONTRIBUTING.md) for the issue → branch → PR workflow.
 PRs target `main`; merging runs quality checks but does not publish. Releases
 run only through a manually dispatched `Release` workflow on `main`, which
 generates versions and changelogs from Conventional Commits and publishes
@@ -218,16 +226,14 @@ through npm trusted publishing. See [release setup](docs/releasing.md) and the
 
 MIT
 
+## Contribution
+
+See [Contributing Guide](CONTRIBUTING.md).
+
+## License
+
+MIT
+
 ## Author
 
-[Ben Houston](https://ben3d.ca), Sponsored by [Land of Assets](https://landofassets.com)
-
-[npm]: https://img.shields.io/npm/v/vitest-command-line
-[npm-url]: https://www.npmjs.com/package/vitest-command-line
-[npm-downloads]: https://img.shields.io/npm/dw/vitest-command-line
-[npmtrends-url]: https://www.npmtrends.com/vitest-command-line
-[tests-badge]: https://github.com/bhouston/vitest-command-line/actions/workflows/ci.yml/badge.svg
-[tests-url]: https://github.com/bhouston/vitest-command-line/actions/workflows/ci.yml
-[coverage-badge]: https://codecov.io/gh/bhouston/vitest-command-line/graph/badge.svg
-[coverage-url]: https://codecov.io/gh/bhouston/vitest-command-line
-[discord-url]: https://discord.gg/fwupDN493R
+[Ben Houston](https://ben3d.ca), Sponsored by [Land of Assets](https://landofassets.com).
