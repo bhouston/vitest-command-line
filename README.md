@@ -210,11 +210,7 @@ lines; `pnpm size` enforces a 20 kB gzip budget on the runtime JavaScript
 published npm payload. Change these thresholds only with an explanation in the
 PR.
 
-PRs target `main`; merging runs quality checks but does not publish. Releases
-run only through a manually dispatched `Release` workflow on `main`, which
-generates versions and changelogs from Conventional Commits and publishes
-through npm trusted publishing. See [release setup](docs/releasing.md) and the
-[security policy](SECURITY.md).
+PRs target `main`; merging runs quality checks but does not publish.
 
 ## Testing Notes
 
@@ -222,9 +218,9 @@ through npm trusted publishing. See [release setup](docs/releasing.md) and the
 - Some subprocess tests use Unix-style tools such as `/bin/echo`, `/bin/cat`, and
   `/bin/sh`, so they currently assume a Unix-like environment.
 
-## License
+## Releases
 
-MIT
+See [RELEASING.md](RELEASING.md) for how releases are published and [GitHub Releases](https://github.com/bhouston/vitest-command-line/releases) for changes. See the [security policy](SECURITY.md).
 
 ## Contribution
 
