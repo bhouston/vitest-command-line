@@ -8,3 +8,4 @@ publish
 # Agent tooling
 .claude/
 .codex/
+.cursor/
