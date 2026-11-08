@@ -4,3 +4,7 @@ coverage
 publish
 *.tsbuildinfo
 .DS_Store
+
+# Agent tooling
+.claude/
+.codex/
